@@ -2,9 +2,9 @@ package de.hitec.nhplus.datastorage;
 
 import de.hitec.nhplus.model.Patient;
 import de.hitec.nhplus.utils.DateConverter;
+import de.hitec.nhplus.utils.EncryptionUtil;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 
 /**
@@ -35,12 +35,12 @@ public class PatientDao extends DaoImp<Patient> {
             final String SQL = "INSERT INTO patient (firstname, surname, dateOfBirth, carelevel, roomnumber, assets) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
             preparedStatement = this.connection.prepareStatement(SQL);
-            preparedStatement.setString(1, patient.getFirstName());
-            preparedStatement.setString(2, patient.getSurname());
-            preparedStatement.setString(3, patient.getDateOfBirth());
-            preparedStatement.setString(4, patient.getCareLevel());
-            preparedStatement.setString(5, patient.getRoomNumber());
-            preparedStatement.setString(6, patient.getAssets());
+            preparedStatement.setString(1, encrypt(patient.getFirstName()));
+            preparedStatement.setString(2, encrypt(patient.getSurname()));
+            preparedStatement.setString(3, encrypt(patient.getDateOfBirth()));
+            preparedStatement.setString(4, encrypt(patient.getCareLevel()));
+            preparedStatement.setString(5, encrypt(patient.getRoomNumber()));
+            preparedStatement.setString(6, encrypt(patient.getAssets()));
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
@@ -76,12 +76,12 @@ public class PatientDao extends DaoImp<Patient> {
     protected Patient getInstanceFromResultSet(ResultSet result) throws SQLException {
         return new Patient(
                 result.getInt("pid"),
-                result.getString("firstname"),
-                result.getString("surname"),
-                DateConverter.convertStringToLocalDate(result.getString("dateOfBirth")),
-                result.getString("carelevel"),
-                result.getString("roomnumber"),
-                result.getString("assets"));
+                decrypt(result.getString("firstname")),
+                decrypt(result.getString("surname")),
+                DateConverter.convertStringToLocalDate(decrypt(result.getString("dateOfBirth"))),
+                decrypt(result.getString("carelevel")),
+                decrypt(result.getString("roomnumber")),
+                decrypt(result.getString("assets")));
     }
 
     /**
@@ -112,15 +112,14 @@ public class PatientDao extends DaoImp<Patient> {
     protected ArrayList<Patient> getListFromResultSet(ResultSet result) throws SQLException {
         ArrayList<Patient> list = new ArrayList<>();
         while (result.next()) {
-            LocalDate date = DateConverter.convertStringToLocalDate(result.getString("dateOfBirth"));
             Patient patient = new Patient(
                     result.getInt("pid"),
-                    result.getString("firstname"),
-                    result.getString("surname"),
-                    date,
-                    result.getString("carelevel"),
-                    result.getString("roomnumber"),
-                    result.getString("assets"));
+                    decrypt(result.getString("firstname")),
+                    decrypt(result.getString("surname")),
+                    DateConverter.convertStringToLocalDate(decrypt(result.getString("dateOfBirth"))),
+                    decrypt(result.getString("carelevel")),
+                    decrypt(result.getString("roomnumber")),
+                    decrypt(result.getString("assets")));
             list.add(patient);
         }
         return list;
@@ -147,12 +146,12 @@ public class PatientDao extends DaoImp<Patient> {
                             "assets = ? " +
                             "WHERE pid = ?";
             preparedStatement = this.connection.prepareStatement(SQL);
-            preparedStatement.setString(1, patient.getFirstName());
-            preparedStatement.setString(2, patient.getSurname());
-            preparedStatement.setString(3, patient.getDateOfBirth());
-            preparedStatement.setString(4, patient.getCareLevel());
-            preparedStatement.setString(5, patient.getRoomNumber());
-            preparedStatement.setString(6, patient.getAssets());
+            preparedStatement.setString(1, encrypt(patient.getFirstName()));
+            preparedStatement.setString(2, encrypt(patient.getSurname()));
+            preparedStatement.setString(3, encrypt(patient.getDateOfBirth()));
+            preparedStatement.setString(4, encrypt(patient.getCareLevel()));
+            preparedStatement.setString(5, encrypt(patient.getRoomNumber()));
+            preparedStatement.setString(6, encrypt(patient.getAssets()));
             preparedStatement.setLong(7, patient.getPid());
         } catch (SQLException exception) {
             exception.printStackTrace();
@@ -177,5 +176,13 @@ public class PatientDao extends DaoImp<Patient> {
             exception.printStackTrace();
         }
         return preparedStatement;
+    }
+
+    private String encrypt(String plainText) {
+        return EncryptionUtil.encrypt(plainText);
+    }
+
+    private String decrypt(String encryptedText) {
+        return EncryptionUtil.decrypt(encryptedText);
     }
 }
