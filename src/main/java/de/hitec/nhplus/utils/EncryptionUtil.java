@@ -1,5 +1,7 @@
 package de.hitec.nhplus.utils;
 
+import de.hitec.nhplus.Config;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -72,7 +74,7 @@ public class EncryptionUtil {
     }
 
     private static SecretKey loadKey() {
-        String encodedKey = System.getenv("NHPLUS_ENCRYPTION_KEY");
+        String encodedKey = Config.get("NHPLUS_ENCRYPTION_KEY");
         if (encodedKey == null || encodedKey.isBlank()) {
             throw new DataEncryptionException("Missing encryption key. Set NHPLUS_ENCRYPTION_KEY as Base64 AES-256 key.");
         }
