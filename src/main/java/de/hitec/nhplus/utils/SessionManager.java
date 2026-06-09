@@ -9,7 +9,7 @@ import javafx.util.Duration;
  */
 public class SessionManager {
 
-    private static final int TIMEOUT_SECONDS = 15 * 60; // 900 Sekunden  = 15min
+    private static final int TIMEOUT_SECONDS = 15 * 60; // 900 Sekunden = 15min
 
     private static SessionManager instance; // das einzige Exemplar
     private User loggedInUser;
