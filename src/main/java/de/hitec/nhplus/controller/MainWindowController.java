@@ -1,13 +1,14 @@
 package de.hitec.nhplus.controller;
 
 import de.hitec.nhplus.Main;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import de.hitec.nhplus.utils.SessionManager;
 
 import java.io.IOException;
 
@@ -17,7 +18,7 @@ public class MainWindowController {
     private BorderPane mainBorderPane;
 
     @FXML
-    private void handleShowAllPatient(ActionEvent event) {
+    private void handleShowAllPatient() {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/AllPatientView.fxml"));
         try {
             mainBorderPane.setCenter(loader.load());
@@ -27,7 +28,7 @@ public class MainWindowController {
     }
 
     @FXML
-    private void handleShowAllTreatments(ActionEvent event) {
+    private void handleShowAllTreatments() {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/AllTreatmentView.fxml"));
         try {
             mainBorderPane.setCenter(loader.load());
@@ -36,7 +37,7 @@ public class MainWindowController {
         }
     }
     @FXML
-    private void handleShowPasswordReset(ActionEvent event) {
+    private void handleShowPasswordReset() {
         try {
             // passwort reset fenster laden und anzeigen
             FXMLLoader loader = new FXMLLoader(
@@ -48,6 +49,17 @@ public class MainWindowController {
             stage.show();
         } catch (IOException exception) {
             exception.printStackTrace();
+        }
+    }
+
+    @FXML
+    private Button buttonPasswordReset;
+
+@FXML
+    private void initialize() {
+        // passwort reset button NUR für admins anzeigen!
+        if (!SessionManager.getInstance().isLoggedIn() || !SessionManager.getInstance().getLoggedInUser().isSuperUser()) {
+            buttonPasswordReset.setVisible(false);
         }
     }
 }
