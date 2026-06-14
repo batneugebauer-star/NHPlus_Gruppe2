@@ -9,6 +9,7 @@ module de.hitec.nhplus {
     opens de.hitec.nhplus to javafx.fxml;
     opens de.hitec.nhplus.controller to javafx.fxml;
     opens de.hitec.nhplus.model to javafx.base;
+    opens de.hitec.nhplus.utils to javafx.fxml;
 
     exports de.hitec.nhplus;
     exports de.hitec.nhplus.controller;

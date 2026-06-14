@@ -2,6 +2,7 @@ package de.hitec.nhplus;
 
 import de.hitec.nhplus.datastorage.ConnectionBuilder;
 
+import de.hitec.nhplus.utils.SetUpDB;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -13,6 +14,10 @@ import java.util.Properties;
 
 import java.io.IOException;
 
+import de.hitec.nhplus.controller.LoginController;
+import de.hitec.nhplus.utils.SetUpDB;
+import javafx.scene.layout.VBox;
+
 public class Main extends Application {
 
     private Stage primaryStage;
@@ -20,9 +25,39 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        mainWindow();
+        // user tabelle anlegen falls noch nicht vorhanden
+        SetUpDB.setUpUserTable();
+        // zuerst Login fenster zeigen
+        showLoginWindow();
     }
 
+    public void showLoginWindow(){
+        try {
+            // login fenster laden
+            FXMLLoader loader = new FXMLLoader(
+            Main.class.getResource("/de/hitec/nhplus/LoginView.fxml"));
+            VBox loginPane = loader.load();
+
+            // Stage wird an LoginController übergeben damit er später zum hauptfenster wechseln kann
+            LoginController loginController = loader.getController();
+            loginController.setStage(primaryStage);
+
+            Scene scene = new Scene(loginPane);
+            this.primaryStage.setTitle("NHPlus Anmeldung");
+            this.primaryStage.setScene(scene);
+            this.primaryStage.setResizable(false);
+            this.primaryStage.show();
+
+            //beim schließen muss datenbankverbindung getrennt werden
+            this.primaryStage.setOnCloseRequest(event -> {
+                ConnectionBuilder.closeConnection();
+                Platform.exit();
+                System.exit(0);
+            });
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
     public void mainWindow() {
         try {
             FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/MainWindowView.fxml"));

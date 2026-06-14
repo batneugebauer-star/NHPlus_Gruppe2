@@ -20,7 +20,7 @@ public class EncryptionUtil {
     private static final int GCM_TAG_LENGTH_BITS = 128;
     private static final String ENCRYPTION_PREFIX = "enc:v1:";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-    private static final SecretKey SECRET_KEY = loadKey();
+    private static final SecretKey BOOTSTRAP_KEY = loadKey();
 
     private EncryptionUtil() {
     }
@@ -35,7 +35,7 @@ public class EncryptionUtil {
             SECURE_RANDOM.nextBytes(iv);
 
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.ENCRYPT_MODE, SECRET_KEY, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
+            cipher.init(Cipher.ENCRYPT_MODE, resolveKey(), new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
 
             byte[] cipherText = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
             return ENCRYPTION_PREFIX + Base64.getEncoder().encodeToString(iv) + ":" +
@@ -64,7 +64,7 @@ public class EncryptionUtil {
             byte[] cipherText = Base64.getDecoder().decode(parts[1]);
 
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.DECRYPT_MODE, SECRET_KEY, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
+            cipher.init(Cipher.DECRYPT_MODE, resolveKey(), new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
 
             byte[] plainText = cipher.doFinal(cipherText);
             return new String(plainText, StandardCharsets.UTF_8);
@@ -73,24 +73,45 @@ public class EncryptionUtil {
         }
     }
 
+    public static SecretKey getBootstrapKey() {
+        return BOOTSTRAP_KEY;
+    }
+
+    private static SecretKey resolveKey() {
+        SecretKey sessionKey = SessionManager.getInstance().getDataEncryptionKey();
+        return sessionKey != null ? sessionKey : BOOTSTRAP_KEY;
+    }
+
     private static SecretKey loadKey() {
         String encodedKey = Config.get("NHPLUS_ENCRYPTION_KEY");
         if (encodedKey == null || encodedKey.isBlank()) {
             throw new DataEncryptionException("Missing encryption key. Set NHPLUS_ENCRYPTION_KEY as Base64 AES-256 key.");
         }
 
-        byte[] keyBytes;
-        try {
-            keyBytes = Base64.getDecoder().decode(encodedKey.trim());
-        } catch (IllegalArgumentException exception) {
-            throw new DataEncryptionException("NHPLUS_ENCRYPTION_KEY is not valid Base64.", exception);
-        }
-
+        byte[] keyBytes = decodeConfiguredKey(encodedKey.trim());
         if (keyBytes.length != AES_KEY_LENGTH_BYTES) {
-            throw new DataEncryptionException("NHPLUS_ENCRYPTION_KEY must decode to 32 bytes for AES-256.");
+            throw new DataEncryptionException("NHPLUS_ENCRYPTION_KEY must resolve to 32 bytes for AES-256.");
         }
 
         return new SecretKeySpec(keyBytes, KEY_ALGORITHM);
+    }
+
+    private static byte[] decodeConfiguredKey(String encodedKey) {
+        try {
+            byte[] decoded = Base64.getDecoder().decode(encodedKey);
+            if (decoded.length == AES_KEY_LENGTH_BYTES) {
+                return decoded;
+            }
+        } catch (IllegalArgumentException exception) {
+            // ignore and fall back to raw UTF-8 bytes
+        }
+
+        byte[] rawBytes = encodedKey.getBytes(StandardCharsets.UTF_8);
+        if (rawBytes.length == AES_KEY_LENGTH_BYTES) {
+            return rawBytes;
+        }
+
+        throw new DataEncryptionException("NHPLUS_ENCRYPTION_KEY must be a 32-byte AES key or Base64-encoded 32-byte key.");
     }
 
     public static String generateBase64Key() {
