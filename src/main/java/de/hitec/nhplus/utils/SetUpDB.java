@@ -1,11 +1,10 @@
 package de.hitec.nhplus.utils;
 
-import de.hitec.nhplus.datastorage.ConnectionBuilder;
-import de.hitec.nhplus.datastorage.DaoFactory;
-import de.hitec.nhplus.datastorage.PatientDao;
-import de.hitec.nhplus.datastorage.TreatmentDao;
+import de.hitec.nhplus.datastorage.*;
 import de.hitec.nhplus.model.Patient;
 import de.hitec.nhplus.model.Treatment;
+import de.hitec.nhplus.model.User;
+import de.hitec.nhplus.datastorage.UserDao;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -113,6 +112,29 @@ public class SetUpDB {
             dao.create(new Treatment(17, 6, convertStringToLocalDate("2023-09-01"), convertStringToLocalTime("16:00"), convertStringToLocalTime("17:00"), "KG", "Massage der Extremitäten zur Verbesserung der Durchblutung"));
         } catch (SQLException exception) {
             exception.printStackTrace();
+        }
+    }
+
+    public static void setUpUserTable() {
+        UserDao userDao = DaoFactory.getDaoFactory().createUserDao();
+        userDao.createTableIfNotExists();
+
+        try {
+            // nichts machen wenn schon User vorhanden sind
+            if (!userDao.readAll().isEmpty()) {
+                return;
+            }
+            // Admin-User anlegen
+            String adminSalt = PasswordUtil.generateSalt();
+            String adminHash = PasswordUtil.hash("admin123", adminSalt);
+            userDao.create(new User("admin", adminHash, adminSalt, true));
+            // normale Pflegekraft anlegen
+            String pflegeSalt = PasswordUtil.generateSalt();
+            String pflegeHash = PasswordUtil.hash("pflege1", pflegeSalt);
+            userDao.create(new User("pflege", pflegeHash, pflegeSalt, false));
+
+        } catch (SQLException e) {
+            System.out.println("Fehler: " + e.getMessage());
         }
     }
 
