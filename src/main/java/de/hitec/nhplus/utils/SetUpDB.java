@@ -37,8 +37,10 @@ public class SetUpDB {
         SetUpDB.setUpTablePatient(connection);
         SetUpDB.setUpTableTreatment(connection);
         SetUpDB.setUpTableEventLog(connection);
+        SetUpDB.setUpTableUser(connection);
         SetUpDB.setUpPatients();
         SetUpDB.setUpTreatments();
+        SetUpDB.setUpUsers();
     }
 
     /**
@@ -49,6 +51,7 @@ public class SetUpDB {
             statement.execute("DROP TABLE IF EXISTS treatment");
             statement.execute("DROP TABLE IF EXISTS patient");
             statement.execute("DROP TABLE IF EXISTS eventlog");
+            statement.execute("DROP TABLE IF EXISTS user");
         } catch (SQLException exception) {
             System.out.println(exception.getMessage());
         }
@@ -139,15 +142,28 @@ public class SetUpDB {
         }
     }
 
-    public static void setUpUserTable() {
-        UserDao userDao = DaoFactory.getDaoFactory().createUserDao();
-        userDao.createTableIfNotExists();
+    private static void setUpTableUser(Connection connection) {
+        final String SQL = "CREATE TABLE IF NOT EXISTS user (" +
+                "   uid INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "   username TEXT NOT NULL UNIQUE, " +
+                "   password_hash TEXT NOT NULL, " +
+                "   salt TEXT NOT NULL, " +
+                "   super_user INTEGER NOT NULL DEFAULT 0, " +
+                "   wrapped_encryption_key TEXT, " +
+                "   wrapped_encryption_key_salt TEXT, " +
+                "   wrapped_encryption_key_iv TEXT, " +
+                "   wrapped_encryption_key_iterations INTEGER" +
+                ");";
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(SQL);
+        } catch (SQLException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
 
+    private static void setUpUsers() {
         try {
-            // nichts machen wenn schon User vorhanden sind
-            if (!userDao.readAll().isEmpty()) {
-                return;
-            }
+            UserDao userDao = DaoFactory.getDaoFactory().createUserDao();
             // Admin-User anlegen
             SecretKey encryptionKey = EncryptionUtil.getBootstrapKey();
             String adminSalt = PasswordUtil.generateSalt();
