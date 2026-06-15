@@ -3,6 +3,8 @@ import de.hitec.nhplus.model.User;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
+
+import javax.crypto.SecretKey;
 /**
  * Merkt sich wer gerade eingeloggt ist.
  * Startet automatisch einen 15-Minuten-Timer für den Auto-Logout.
@@ -13,6 +15,7 @@ public class SessionManager {
 
     private static SessionManager instance; // das einzige Exemplar
     private User loggedInUser;
+    private SecretKey dataEncryptionKey;
     private Timeline timeoutTimer;
     private Runnable onTimeout;
 
@@ -26,8 +29,9 @@ public class SessionManager {
     }
 
     // Login: User merken + Timer starten
-    public void login(User user, Runnable onTimeout) {
+    public void login(User user, SecretKey dataEncryptionKey, Runnable onTimeout) {
         this.loggedInUser = user;
+        this.dataEncryptionKey = dataEncryptionKey;
         this.onTimeout = onTimeout;
         startTimer();
     }
@@ -35,10 +39,12 @@ public class SessionManager {
     // Logout: User vergessen + Timer stoppen
     public void logout() {
         loggedInUser = null;
+        dataEncryptionKey = null;
         stopTimer();
     }
 
     public User getLoggedInUser() { return loggedInUser; }
+    public SecretKey getDataEncryptionKey() { return dataEncryptionKey; }
 
     public boolean isLoggedIn() { return loggedInUser != null; }
 
