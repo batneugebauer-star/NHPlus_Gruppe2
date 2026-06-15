@@ -28,4 +28,7 @@ public class DaoFactory {
     public UserDao createUserDao() {
         return new UserDao(ConnectionBuilder.getConnection());
     }
+    public EventLogDao createEventLogDao() {return new EventLogDao(ConnectionBuilder.getConnection());
+    }
+
 }

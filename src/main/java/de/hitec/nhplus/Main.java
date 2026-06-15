@@ -24,7 +24,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
         // user tabelle anlegen falls noch nicht vorhanden
-        SetUpDB.setUpUserTable();
+       // SetUpDB.setUpUserTable();
         // zuerst Login fenster zeigen
         showLoginWindow();
     }
