@@ -1,6 +1,7 @@
 package de.hitec.nhplus.controller;
 
 import de.hitec.nhplus.Main;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -18,7 +19,7 @@ public class MainWindowController {
     private BorderPane mainBorderPane;
 
     @FXML
-    private void handleShowAllPatient() {
+    private void handleShowAllPatient(ActionEvent event) {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/AllPatientView.fxml"));
         try {
             mainBorderPane.setCenter(loader.load());
@@ -28,7 +29,17 @@ public class MainWindowController {
     }
 
     @FXML
-    private void handleShowAllTreatments() {
+    private void handleShowAllCaregiver(ActionEvent event) {
+        FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/AllCaregiverView.fxml"));
+        try {
+            mainBorderPane.setCenter(loader.load());
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleShowAllTreatments(ActionEvent event) {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/de/hitec/nhplus/AllTreatmentView.fxml"));
         try {
             mainBorderPane.setCenter(loader.load());
