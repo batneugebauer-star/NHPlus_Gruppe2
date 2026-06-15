@@ -185,17 +185,3 @@ public class AllCaregiverController {
     }
 }
 
-    @FXML
-    private TableView<?> tableView;
-
-    @FXML
-    private Button buttonAdd;
-
-    @FXML
-    private Button buttonDelete;
-
-    @FXML
-    public void initialize() {
-        // Wird später für Rollenrechte und Pflegekräfte-Verwaltung erweitert.
-    }
-}
