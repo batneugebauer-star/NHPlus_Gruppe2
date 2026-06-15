@@ -14,6 +14,7 @@ import de.hitec.nhplus.datastorage.UserDao;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import javax.crypto.SecretKey;
 
 import static de.hitec.nhplus.utils.DateConverter.convertStringToLocalDate;
 import static de.hitec.nhplus.utils.DateConverter.convertStringToLocalTime;
@@ -135,6 +136,50 @@ public class SetUpDB {
             dao.create(new Treatment(17, 6, convertStringToLocalDate("2023-09-01"), convertStringToLocalTime("16:00"), convertStringToLocalTime("17:00"), "KG", "Massage der Extremitäten zur Verbesserung der Durchblutung"));
         } catch (SQLException exception) {
             exception.printStackTrace();
+        }
+    }
+
+    public static void setUpUserTable() {
+        UserDao userDao = DaoFactory.getDaoFactory().createUserDao();
+        userDao.createTableIfNotExists();
+
+        try {
+            // nichts machen wenn schon User vorhanden sind
+            if (!userDao.readAll().isEmpty()) {
+                return;
+            }
+            // Admin-User anlegen
+            SecretKey encryptionKey = EncryptionUtil.getBootstrapKey();
+            String adminSalt = PasswordUtil.generateSalt();
+            String adminHash = PasswordUtil.hash("admin123", adminSalt);
+            KeyWrapUtil.WrappedKey adminWrappedKey = KeyWrapUtil.wrap(encryptionKey, "admin123");
+            userDao.create(new User(
+                    "admin",
+                    adminHash,
+                    adminSalt,
+                    true,
+                    adminWrappedKey.wrappedKey(),
+                    adminWrappedKey.salt(),
+                    adminWrappedKey.iv(),
+                    adminWrappedKey.iterations()
+            ));
+            // normale Pflegekraft anlegen
+            String pflegeSalt = PasswordUtil.generateSalt();
+            String pflegeHash = PasswordUtil.hash("pflege1", pflegeSalt);
+            KeyWrapUtil.WrappedKey pflegeWrappedKey = KeyWrapUtil.wrap(encryptionKey, "pflege1");
+            userDao.create(new User(
+                    "pflege",
+                    pflegeHash,
+                    pflegeSalt,
+                    false,
+                    pflegeWrappedKey.wrappedKey(),
+                    pflegeWrappedKey.salt(),
+                    pflegeWrappedKey.iv(),
+                    pflegeWrappedKey.iterations()
+            ));
+
+        } catch (SQLException e) {
+            System.out.println("Fehler: " + e.getMessage());
         }
     }
 
