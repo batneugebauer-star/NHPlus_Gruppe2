@@ -56,4 +56,4 @@ public class Caregiver extends Person {
 
     public void setQualification(String qualification) {
         this.qualification.set(qualification);
-    }
+    }}
