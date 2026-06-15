@@ -6,7 +6,7 @@ import javafx.beans.property.SimpleStringProperty;
 
 public class Caregiver extends Person {
 
-    private final SimpleLongProperty cid;
+    private SimpleLongProperty cid;
     private final SimpleStringProperty phoneNumber;
     private final SimpleStringProperty qualification;
 
