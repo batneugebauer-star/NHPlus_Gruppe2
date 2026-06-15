@@ -4,6 +4,7 @@ import de.hitec.nhplus.datastorage.*;
 import de.hitec.nhplus.model.Patient;
 import de.hitec.nhplus.model.Treatment;
 import de.hitec.nhplus.model.User;
+import de.hitec.nhplus.model.Role;
 import de.hitec.nhplus.datastorage.UserDao;
 
 import java.sql.Connection;
@@ -33,6 +34,7 @@ public class SetUpDB {
         SetUpDB.setUpTableTreatment(connection);
         SetUpDB.setUpPatients();
         SetUpDB.setUpTreatments();
+        SetUpDB.setUpUserTable();
     }
 
     /**
@@ -130,7 +132,7 @@ public class SetUpDB {
             String adminSalt = PasswordUtil.generateSalt();
             String adminHash = PasswordUtil.hash("admin123", adminSalt);
             KeyWrapUtil.WrappedKey adminWrappedKey = KeyWrapUtil.wrap(encryptionKey, "admin123");
-            userDao.create(new User(
+            User admin = new User(
                     "admin",
                     adminHash,
                     adminSalt,
@@ -139,12 +141,17 @@ public class SetUpDB {
                     adminWrappedKey.salt(),
                     adminWrappedKey.iv(),
                     adminWrappedKey.iterations()
-            ));
+            );
+
+            admin.setRole(Role.ADMIN);
+
+            userDao.create(admin);
+
             // normale Pflegekraft anlegen
             String pflegeSalt = PasswordUtil.generateSalt();
             String pflegeHash = PasswordUtil.hash("pflege1", pflegeSalt);
             KeyWrapUtil.WrappedKey pflegeWrappedKey = KeyWrapUtil.wrap(encryptionKey, "pflege1");
-            userDao.create(new User(
+            User pflege = new User(
                     "pflege",
                     pflegeHash,
                     pflegeSalt,
@@ -153,7 +160,11 @@ public class SetUpDB {
                     pflegeWrappedKey.salt(),
                     pflegeWrappedKey.iv(),
                     pflegeWrappedKey.iterations()
-            ));
+            );
+
+            pflege.setRole(Role.REGISTERED_NURSE);
+
+            userDao.create(pflege);
 
         } catch (SQLException e) {
             System.out.println("Fehler: " + e.getMessage());

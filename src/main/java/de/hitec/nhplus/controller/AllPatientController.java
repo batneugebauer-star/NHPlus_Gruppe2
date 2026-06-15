@@ -15,6 +15,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import de.hitec.nhplus.model.Patient;
 import de.hitec.nhplus.utils.DateConverter;
+import de.hitec.nhplus.utils.PermissionManager;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -84,6 +85,13 @@ public class AllPatientController {
     public void initialize() {
         this.readAllAndShowInTableView();
 
+        // Rollenprüfung
+        if (!PermissionManager.canEditResidents()) {
+            buttonAdd.setDisable(true);
+            buttonDelete.setDisable(true);
+            tableView.setEditable(false);
+        }
+
         this.columnId.setCellValueFactory(new PropertyValueFactory<>("pid"));
 
         // CellValueFactory to show property values in TableView
@@ -112,7 +120,7 @@ public class AllPatientController {
         this.buttonDelete.setDisable(true);
         this.tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Patient>() {
             @Override
-            public void changed(ObservableValue<? extends Patient> observableValue, Patient oldPatient, Patient newPatient) {;
+            public void changed(ObservableValue<? extends Patient> observableValue, Patient oldPatient, Patient newPatient) {
                 AllPatientController.this.buttonDelete.setDisable(newPatient == null);
             }
         });
@@ -120,6 +128,7 @@ public class AllPatientController {
         this.buttonAdd.setDisable(true);
         ChangeListener<String> inputNewPatientListener = (observableValue, oldText, newText) ->
                 AllPatientController.this.buttonAdd.setDisable(!AllPatientController.this.areInputDataValid());
+
         this.textFieldSurname.textProperty().addListener(inputNewPatientListener);
         this.textFieldFirstName.textProperty().addListener(inputNewPatientListener);
         this.textFieldDateOfBirth.textProperty().addListener(inputNewPatientListener);
@@ -200,6 +209,11 @@ public class AllPatientController {
      * @param event Event including the changed object and the change.
      */
     private void doUpdate(TableColumn.CellEditEvent<Patient, String> event) {
+
+        if (!PermissionManager.canEditResidents()) {
+            return;
+        }
+
         try {
             this.dao.update(event.getRowValue());
         } catch (SQLException exception) {
@@ -228,7 +242,13 @@ public class AllPatientController {
      */
     @FXML
     public void handleDelete() {
+
+        if (!PermissionManager.canEditResidents()) {
+            return;
+        }
+
         Patient selectedItem = this.tableView.getSelectionModel().getSelectedItem();
+
         if (selectedItem != null) {
             try {
                 DaoFactory.getDaoFactory().createPatientDao().deleteById(selectedItem.getPid());
@@ -246,6 +266,11 @@ public class AllPatientController {
      */
     @FXML
     public void handleAdd() {
+
+        if (!PermissionManager.canEditResidents()) {
+            return;
+        }
+
         String surname = this.textFieldSurname.getText();
         String firstName = this.textFieldFirstName.getText();
         String birthday = this.textFieldDateOfBirth.getText();
@@ -253,11 +278,13 @@ public class AllPatientController {
         String careLevel = this.textFieldCareLevel.getText();
         String roomNumber = this.textFieldRoomNumber.getText();
         String assets = this.textFieldAssets.getText();
+
         try {
             this.dao.create(new Patient(firstName, surname, date, careLevel, roomNumber, assets));
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
+
         readAllAndShowInTableView();
         clearTextfields();
     }
@@ -283,8 +310,11 @@ public class AllPatientController {
             }
         }
 
-        return !this.textFieldFirstName.getText().isBlank() && !this.textFieldSurname.getText().isBlank() &&
-                !this.textFieldDateOfBirth.getText().isBlank() && !this.textFieldCareLevel.getText().isBlank() &&
-                !this.textFieldRoomNumber.getText().isBlank() && !this.textFieldAssets.getText().isBlank();
+        return !this.textFieldFirstName.getText().isBlank() &&
+                !this.textFieldSurname.getText().isBlank() &&
+                !this.textFieldDateOfBirth.getText().isBlank() &&
+                !this.textFieldCareLevel.getText().isBlank() &&
+                !this.textFieldRoomNumber.getText().isBlank() &&
+                !this.textFieldAssets.getText().isBlank();
     }
 }
