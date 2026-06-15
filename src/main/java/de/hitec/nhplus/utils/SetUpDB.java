@@ -9,6 +9,7 @@ import de.hitec.nhplus.datastorage.UserDao;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import javax.crypto.SecretKey;
 
 import static de.hitec.nhplus.utils.DateConverter.convertStringToLocalDate;
 import static de.hitec.nhplus.utils.DateConverter.convertStringToLocalTime;
@@ -125,13 +126,34 @@ public class SetUpDB {
                 return;
             }
             // Admin-User anlegen
+            SecretKey encryptionKey = EncryptionUtil.getBootstrapKey();
             String adminSalt = PasswordUtil.generateSalt();
             String adminHash = PasswordUtil.hash("admin123", adminSalt);
-            userDao.create(new User("admin", adminHash, adminSalt, true));
+            KeyWrapUtil.WrappedKey adminWrappedKey = KeyWrapUtil.wrap(encryptionKey, "admin123");
+            userDao.create(new User(
+                    "admin",
+                    adminHash,
+                    adminSalt,
+                    true,
+                    adminWrappedKey.wrappedKey(),
+                    adminWrappedKey.salt(),
+                    adminWrappedKey.iv(),
+                    adminWrappedKey.iterations()
+            ));
             // normale Pflegekraft anlegen
             String pflegeSalt = PasswordUtil.generateSalt();
             String pflegeHash = PasswordUtil.hash("pflege1", pflegeSalt);
-            userDao.create(new User("pflege", pflegeHash, pflegeSalt, false));
+            KeyWrapUtil.WrappedKey pflegeWrappedKey = KeyWrapUtil.wrap(encryptionKey, "pflege1");
+            userDao.create(new User(
+                    "pflege",
+                    pflegeHash,
+                    pflegeSalt,
+                    false,
+                    pflegeWrappedKey.wrappedKey(),
+                    pflegeWrappedKey.salt(),
+                    pflegeWrappedKey.iv(),
+                    pflegeWrappedKey.iterations()
+            ));
 
         } catch (SQLException e) {
             System.out.println("Fehler: " + e.getMessage());
