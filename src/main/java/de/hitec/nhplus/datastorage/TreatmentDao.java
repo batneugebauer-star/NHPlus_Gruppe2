@@ -2,6 +2,7 @@ package de.hitec.nhplus.datastorage;
 
 import de.hitec.nhplus.model.Treatment;
 import de.hitec.nhplus.utils.DateConverter;
+import de.hitec.nhplus.utils.EncryptionUtil;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -38,11 +39,11 @@ public class TreatmentDao extends DaoImp<Treatment> {
                     "VALUES (?, ?, ?, ?, ?, ?)";
             preparedStatement = this.connection.prepareStatement(SQL);
             preparedStatement.setLong(1, treatment.getPid());
-            preparedStatement.setString(2, treatment.getDate());
-            preparedStatement.setString(3, treatment.getBegin());
-            preparedStatement.setString(4, treatment.getEnd());
-            preparedStatement.setString(5, treatment.getDescription());
-            preparedStatement.setString(6, treatment.getRemarks());
+            preparedStatement.setString(2, encrypt(treatment.getDate()));
+            preparedStatement.setString(3, encrypt(treatment.getBegin()));
+            preparedStatement.setString(4, encrypt(treatment.getEnd()));
+            preparedStatement.setString(5, encrypt(treatment.getDescription()));
+            preparedStatement.setString(6, encrypt(treatment.getRemarks()));
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
@@ -76,11 +77,11 @@ public class TreatmentDao extends DaoImp<Treatment> {
      */
     @Override
     protected Treatment getInstanceFromResultSet(ResultSet result) throws SQLException {
-        LocalDate date = DateConverter.convertStringToLocalDate(result.getString("treatment_date"));
-        LocalTime begin = DateConverter.convertStringToLocalTime(result.getString("begin"));
-        LocalTime end = DateConverter.convertStringToLocalTime(result.getString("end"));
+        LocalDate date = DateConverter.convertStringToLocalDate(decrypt(result.getString("treatment_date")));
+        LocalTime begin = DateConverter.convertStringToLocalTime(decrypt(result.getString("begin")));
+        LocalTime end = DateConverter.convertStringToLocalTime(decrypt(result.getString("end")));
         return new Treatment(result.getLong("tid"), result.getLong("pid"),
-                date, begin, end, result.getString("description"), result.getString("remark"));
+                date, begin, end, decrypt(result.getString("description")), decrypt(result.getString("remark")));
     }
 
     /**
@@ -112,11 +113,11 @@ public class TreatmentDao extends DaoImp<Treatment> {
     protected ArrayList<Treatment> getListFromResultSet(ResultSet result) throws SQLException {
         ArrayList<Treatment> list = new ArrayList<Treatment>();
         while (result.next()) {
-            LocalDate date = DateConverter.convertStringToLocalDate(result.getString("treatment_date"));
-            LocalTime begin = DateConverter.convertStringToLocalTime(result.getString("begin"));
-            LocalTime end = DateConverter.convertStringToLocalTime(result.getString("end"));
+            LocalDate date = DateConverter.convertStringToLocalDate(decrypt(result.getString("treatment_date")));
+            LocalTime begin = DateConverter.convertStringToLocalTime(decrypt(result.getString("begin")));
+            LocalTime end = DateConverter.convertStringToLocalTime(decrypt(result.getString("end")));
             Treatment treatment = new Treatment(result.getLong("tid"), result.getLong("pid"),
-                    date, begin, end, result.getString("description"), result.getString("remark"));
+                    date, begin, end, decrypt(result.getString("description")), decrypt(result.getString("remark")));
             list.add(treatment);
         }
         return list;
@@ -177,11 +178,11 @@ public class TreatmentDao extends DaoImp<Treatment> {
                             "WHERE tid = ?";
             preparedStatement = this.connection.prepareStatement(SQL);
             preparedStatement.setLong(1, treatment.getPid());
-            preparedStatement.setString(2, treatment.getDate());
-            preparedStatement.setString(3, treatment.getBegin());
-            preparedStatement.setString(4, treatment.getEnd());
-            preparedStatement.setString(5, treatment.getDescription());
-            preparedStatement.setString(6, treatment.getRemarks());
+            preparedStatement.setString(2, encrypt(treatment.getDate()));
+            preparedStatement.setString(3, encrypt(treatment.getBegin()));
+            preparedStatement.setString(4, encrypt(treatment.getEnd()));
+            preparedStatement.setString(5, encrypt(treatment.getDescription()));
+            preparedStatement.setString(6, encrypt(treatment.getRemarks()));
             preparedStatement.setLong(7, treatment.getTid());
         } catch (SQLException exception) {
             exception.printStackTrace();
@@ -207,5 +208,13 @@ public class TreatmentDao extends DaoImp<Treatment> {
             exception.printStackTrace();
         }
         return preparedStatement;
+    }
+
+    private String encrypt(String plainText) {
+        return EncryptionUtil.encrypt(plainText);
+    }
+
+    private String decrypt(String encryptedText) {
+        return EncryptionUtil.decrypt(encryptedText);
     }
 }
