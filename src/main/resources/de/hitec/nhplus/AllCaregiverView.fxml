@@ -24,7 +24,7 @@
   Orientiert euch beim Ausfüllen an AllPatientView.fxml — gleicher Aufbau,
   nur andere Domäne.
 -->
-<AnchorPane prefHeight="500.0" prefWidth="855.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@Application.css">
+<AnchorPane prefHeight="500.0" prefWidth="855.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.hitec.nhplus.controller.AllCaregiverController" stylesheets="@Application.css">
    <children>
       <TableView fx:id="tableView" editable="true" layoutX="31.0" layoutY="120.0" prefHeight="287.0" prefWidth="825.0" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="80.0">
          <columns>
