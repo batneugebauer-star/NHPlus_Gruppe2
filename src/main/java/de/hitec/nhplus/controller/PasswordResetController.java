@@ -3,6 +3,7 @@ package de.hitec.nhplus.controller;
 import de.hitec.nhplus.datastorage.DaoFactory;
 import de.hitec.nhplus.datastorage.UserDao;
 import de.hitec.nhplus.model.User;
+import de.hitec.nhplus.utils.KeyWrapUtil;
 import de.hitec.nhplus.utils.PasswordUtil;
 import de.hitec.nhplus.utils.SessionManager;
 
@@ -13,6 +14,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.sql.SQLException;
+import javax.crypto.SecretKey;
 
 // Controller für das Passwort-Reset-Fenster
 // NUR ADMINS dürfen Passwörter zurücksetzten!
@@ -63,8 +65,18 @@ public class PasswordResetController {
             // neuen Salt und Hash berechnen und speichern
             String newSalt = PasswordUtil.generateSalt();
             String newHash = PasswordUtil.hash(newPw, newSalt);
+            SecretKey encryptionKey = SessionManager.getInstance().getDataEncryptionKey();
+            if (encryptionKey == null) {
+                showMessage("Verschlüsselungsschlüssel nicht geladen.", true);
+                return;
+            }
+            KeyWrapUtil.WrappedKey wrappedKey = KeyWrapUtil.wrap(encryptionKey, newPw);
             user.setSalt(newSalt);
             user.setPasswordHash(newHash);
+            user.setWrappedEncryptionKey(wrappedKey.wrappedKey());
+            user.setWrappedEncryptionKeySalt(wrappedKey.salt());
+            user.setWrappedEncryptionKeyIv(wrappedKey.iv());
+            user.setWrappedEncryptionKeyIterations(wrappedKey.iterations());
             userDao.updatePassword(user);
 
             showMessage("Passwort erfolgreich zurückgesetzt.", false);
