@@ -4,6 +4,9 @@ import de.hitec.nhplus.Main;
 import de.hitec.nhplus.datastorage.DaoFactory;
 import de.hitec.nhplus.datastorage.UserDao;
 import de.hitec.nhplus.model.User;
+import de.hitec.nhplus.utils.DataEncryptionException;
+import de.hitec.nhplus.utils.EncryptionUtil;
+import de.hitec.nhplus.utils.KeyWrapUtil;
 import de.hitec.nhplus.utils.PasswordUtil;
 import de.hitec.nhplus.utils.SessionManager;
 
@@ -19,6 +22,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import javax.crypto.SecretKey;
 
 /**
  * Controller für das Login-Fenster.
@@ -74,8 +78,10 @@ public class LoginController {
                 return;
             }
 
+            SecretKey dataKey = resolveDataKey(userDao, user, password);
+
             // Login erfolgreich — Session starten + Auto-Logout einrichten
-            SessionManager.getInstance().login(user, () ->
+            SessionManager.getInstance().login(user, dataKey, () ->
                     javafx.application.Platform.runLater(this::showLoginWindow)
             );
 
@@ -84,7 +90,38 @@ public class LoginController {
         } catch (SQLException e) {
             showError("Datenbankfehler: " + e.getMessage());
             e.printStackTrace();
+        } catch (DataEncryptionException e) {
+            showError("Der Verschlüsselungsschlüssel konnte nicht geladen werden.");
+            e.printStackTrace();
         }
+    }
+
+    private SecretKey resolveDataKey(UserDao userDao, User user, String password) throws SQLException {
+        if (hasWrappedEncryptionKey(user)) {
+            return KeyWrapUtil.unwrap(
+                    user.getWrappedEncryptionKey(),
+                    user.getWrappedEncryptionKeySalt(),
+                    user.getWrappedEncryptionKeyIv(),
+                    user.getWrappedEncryptionKeyIterations(),
+                    password
+            );
+        }
+
+        SecretKey bootstrapKey = EncryptionUtil.getBootstrapKey();
+        KeyWrapUtil.WrappedKey wrappedKey = KeyWrapUtil.wrap(bootstrapKey, password);
+        user.setWrappedEncryptionKey(wrappedKey.wrappedKey());
+        user.setWrappedEncryptionKeySalt(wrappedKey.salt());
+        user.setWrappedEncryptionKeyIv(wrappedKey.iv());
+        user.setWrappedEncryptionKeyIterations(wrappedKey.iterations());
+        userDao.updatePassword(user);
+        return bootstrapKey;
+    }
+
+    private boolean hasWrappedEncryptionKey(User user) {
+        return user.getWrappedEncryptionKey() != null
+                && user.getWrappedEncryptionKeySalt() != null
+                && user.getWrappedEncryptionKeyIv() != null
+                && user.getWrappedEncryptionKeyIterations() > 0;
     }
 
     private void showError(String message) {
