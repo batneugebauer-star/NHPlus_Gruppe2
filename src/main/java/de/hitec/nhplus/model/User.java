@@ -12,6 +12,7 @@ public class User {
     private String passwordHash; // gehashtes PW
     private String salt; // für das hashen
     private boolean superUser; // true = admin, false = normale pflegeperson
+    private Role role;
     private String wrappedEncryptionKey;
     private String wrappedEncryptionKeySalt;
     private String wrappedEncryptionKeyIv;
@@ -29,6 +30,7 @@ public class User {
         this.passwordHash = passwordHash;
         this.salt = salt;
         this.superUser = superUser;
+        this.role = Role.REGISTERED_NURSE;
         this.wrappedEncryptionKey = wrappedEncryptionKey;
         this.wrappedEncryptionKeySalt = wrappedEncryptionKeySalt;
         this.wrappedEncryptionKeyIv = wrappedEncryptionKeyIv;
@@ -61,6 +63,11 @@ public class User {
         return salt;
     }
     public boolean isSuperUser(){ return superUser; }
+
+    public Role getRole() {
+        return role;
+    }
+
     public String getWrappedEncryptionKey() { return wrappedEncryptionKey; }
     public String getWrappedEncryptionKeySalt() { return wrappedEncryptionKeySalt; }
     public String getWrappedEncryptionKeyIv() { return wrappedEncryptionKeyIv; }
@@ -69,10 +76,17 @@ public class User {
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
     } // Setter nur für das Passwort Reset gebraucht
+
     public void setSalt(String salt)
     {
         this.salt = salt;
     }
+
+    public void setRole(Role role)
+    {
+        this.role = role;
+    }
+
     public void setWrappedEncryptionKey(String wrappedEncryptionKey) {
         this.wrappedEncryptionKey = wrappedEncryptionKey;
     }

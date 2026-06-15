@@ -184,4 +184,3 @@ public class AllCaregiverController {
                 !this.textFieldTelephone.getText().isBlank() && !this.textFieldQualification.getText().isBlank();
     }
 }
-

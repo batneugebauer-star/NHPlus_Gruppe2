@@ -1,5 +1,6 @@
 package de.hitec.nhplus.datastorage;
 import de.hitec.nhplus.model.User;
+import de.hitec.nhplus.model.Role;
 
 import java.sql.*;
 
@@ -23,6 +24,7 @@ public class UserDao extends DaoImp<User> {
                         "   password_hash TEXT    NOT NULL, " +
                         "   salt          TEXT    NOT NULL, " +
                         "   super_user    INTEGER NOT NULL DEFAULT 0, " +
+                        "   role          TEXT," +
                         "   wrapped_encryption_key TEXT, " +
                         "   wrapped_encryption_key_salt TEXT, " +
                         "   wrapped_encryption_key_iv TEXT, " +
@@ -34,6 +36,7 @@ public class UserDao extends DaoImp<User> {
             ensureColumnExists("wrapped_encryption_key_salt", "TEXT");
             ensureColumnExists("wrapped_encryption_key_iv", "TEXT");
             ensureColumnExists("wrapped_encryption_key_iterations", "INTEGER");
+            ensureColumnExists("role", "TEXT");
         } catch (SQLException e) {
             System.out.println("UserDao.createTableIfNotExists: " + e.getMessage());
         }
@@ -72,7 +75,8 @@ public class UserDao extends DaoImp<User> {
 
     @Override
     protected User getInstanceFromResultSet(ResultSet rs) throws SQLException {
-        return new User(
+
+        User user = new User(
                 rs.getLong("uid"),
                 rs.getString("username"),
                 rs.getString("password_hash"),
@@ -83,6 +87,14 @@ public class UserDao extends DaoImp<User> {
                 rs.getString("wrapped_encryption_key_iv"),
                 rs.getInt("wrapped_encryption_key_iterations")
         );
+
+        String roleName = rs.getString("role");
+
+        if (roleName != null) {
+            user.setRole(Role.valueOf(roleName));
+        }
+
+        return user;
     }
 
     @Override
@@ -97,19 +109,20 @@ public class UserDao extends DaoImp<User> {
     @Override
     protected PreparedStatement getCreateStatement(User user) {
         final String SQL =
-                "INSERT INTO user (username, password_hash, salt, super_user, wrapped_encryption_key, " +
+                "INSERT INTO user (username, password_hash, salt, super_user, role, wrapped_encryption_key, " +
                         "wrapped_encryption_key_salt, wrapped_encryption_key_iv, wrapped_encryption_key_iterations) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement stmt = connection.prepareStatement(SQL);
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getPasswordHash());
             stmt.setString(3, user.getSalt());
             stmt.setInt(4, user.isSuperUser() ? 1 : 0);
-            stmt.setString(5, user.getWrappedEncryptionKey());
-            stmt.setString(6, user.getWrappedEncryptionKeySalt());
-            stmt.setString(7, user.getWrappedEncryptionKeyIv());
-            stmt.setInt(8, user.getWrappedEncryptionKeyIterations());
+            stmt.setString(5, user.getRole() == null ? null : user.getRole().name());
+            stmt.setString(6, user.getWrappedEncryptionKey());
+            stmt.setString(7, user.getWrappedEncryptionKeySalt());
+            stmt.setString(8, user.getWrappedEncryptionKeyIv());
+            stmt.setInt(9, user.getWrappedEncryptionKeyIterations());
             return stmt;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -140,7 +153,7 @@ public class UserDao extends DaoImp<User> {
     @Override
     protected PreparedStatement getUpdateStatement(User user) {
         final String SQL =
-                "UPDATE user SET username=?, password_hash=?, salt=?, super_user=?, wrapped_encryption_key=?, " +
+                "UPDATE user SET username=?, password_hash=?, salt=?, super_user=?,role=?, wrapped_encryption_key=?, " +
                         "wrapped_encryption_key_salt=?, wrapped_encryption_key_iv=?, wrapped_encryption_key_iterations=? WHERE uid=?";
         try {
             PreparedStatement stmt = connection.prepareStatement(SQL);
@@ -148,11 +161,12 @@ public class UserDao extends DaoImp<User> {
             stmt.setString(2, user.getPasswordHash());
             stmt.setString(3, user.getSalt());
             stmt.setInt(4, user.isSuperUser() ? 1 : 0);
-            stmt.setString(5, user.getWrappedEncryptionKey());
-            stmt.setString(6, user.getWrappedEncryptionKeySalt());
-            stmt.setString(7, user.getWrappedEncryptionKeyIv());
-            stmt.setInt(8, user.getWrappedEncryptionKeyIterations());
-            stmt.setLong(9, user.getUid());
+            stmt.setString(5, user.getRole() == null ? null: user.getRole().name());
+            stmt.setString(6, user.getWrappedEncryptionKey());
+            stmt.setString(7, user.getWrappedEncryptionKeySalt());
+            stmt.setString(8, user.getWrappedEncryptionKeyIv());
+            stmt.setInt(9, user.getWrappedEncryptionKeyIterations());
+            stmt.setLong(10, user.getUid());
             return stmt;
         } catch (SQLException e) {
             throw new RuntimeException(e);
