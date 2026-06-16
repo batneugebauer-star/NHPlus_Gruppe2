@@ -22,11 +22,30 @@ public final class KeyWrapUtil {
     private static final int DEFAULT_ITERATIONS = 210_000;
     private static final int GCM_TAG_LENGTH_BITS = 128;
 
+    /**
+     * Holds the wrapped data key and all parameters required for unwrapping.
+     *
+     * @param wrappedKey Base64-encoded wrapped key bytes
+     * @param salt Base64-encoded PBKDF2 salt
+     * @param iv Base64-encoded AES-GCM IV
+     * @param iterations PBKDF2 iteration count used during wrapping
+     */
     public record WrappedKey(String wrappedKey, String salt, String iv, int iterations) {}
 
+    /**
+     * Utility class for key wrapping helpers.
+     */
     private KeyWrapUtil() {
     }
 
+    /**
+     * Wraps the given data key with a password-derived key using randomly generated salt and IV.
+     *
+     * @param dataKey the data encryption key to wrap
+     * @param password the password used to derive the key-encryption key
+     * @return wrapper object containing the wrapped key and derivation parameters
+     * @throws DataEncryptionException when wrapping fails
+     */
     public static WrappedKey wrap(SecretKey dataKey, String password) {
         byte[] salt = new byte[SALT_LENGTH_BYTES];
         byte[] iv = new byte[IV_LENGTH_BYTES];
@@ -35,6 +54,17 @@ public final class KeyWrapUtil {
         return wrap(dataKey, password, salt, iv, DEFAULT_ITERATIONS);
     }
 
+    /**
+     * Wraps the given data key with caller-provided salt, IV and iteration count.
+     *
+     * @param dataKey the data encryption key to wrap
+     * @param password the password used to derive the key-encryption key
+     * @param salt the PBKDF2 salt bytes
+     * @param iv the AES-GCM IV bytes
+     * @param iterations the PBKDF2 iteration count
+     * @return wrapper object containing the wrapped key and derivation parameters
+     * @throws DataEncryptionException when wrapping fails
+     */
     public static WrappedKey wrap(SecretKey dataKey, String password, byte[] salt, byte[] iv, int iterations) {
         try {
             SecretKey keyEncryptionKey = deriveKeyEncryptionKey(password, salt, iterations);
@@ -53,6 +83,17 @@ public final class KeyWrapUtil {
         }
     }
 
+    /**
+     * Unwraps a previously wrapped data key.
+     *
+     * @param wrappedKey Base64-encoded wrapped key bytes
+     * @param salt Base64-encoded PBKDF2 salt
+     * @param iv Base64-encoded AES-GCM IV
+     * @param iterations PBKDF2 iteration count used during wrapping
+     * @param password the password used to derive the key-encryption key
+     * @return the unwrapped AES data key
+     * @throws DataEncryptionException when payload decoding or unwrapping fails
+     */
     public static SecretKey unwrap(String wrappedKey, String salt, String iv, int iterations, String password) {
         try {
             byte[] wrappedKeyBytes = Base64.getDecoder().decode(wrappedKey);
@@ -70,6 +111,15 @@ public final class KeyWrapUtil {
         }
     }
 
+    /**
+     * Derives a key-encryption key from password and salt using PBKDF2-HMAC-SHA256.
+     *
+     * @param password the password input
+     * @param salt the PBKDF2 salt bytes
+     * @param iterations PBKDF2 iteration count
+     * @return derived AES key-encryption key
+     * @throws GeneralSecurityException when key derivation fails
+     */
     private static SecretKey deriveKeyEncryptionKey(String password, byte[] salt, int iterations)
             throws GeneralSecurityException {
         PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, KEY_LENGTH_BITS);

@@ -45,6 +45,13 @@ public class NewTreatmentController {
     private Patient patient;
     private Stage stage;
 
+    /**
+     * Initializes the create-treatment dialog with parent controller, stage, and patient context.
+     *
+     * @param controller parent controller to refresh after creation
+     * @param stage stage of the create dialog
+     * @param patient patient for whom a treatment is created
+     */
     public void initialize(AllTreatmentController controller, Stage stage, Patient patient) {
         this.controller= controller;
         this.patient = patient;
@@ -72,11 +79,17 @@ public class NewTreatmentController {
         this.showPatientData();
     }
 
+    /**
+     * Displays the selected patient's basic data in the dialog header.
+     */
     private void showPatientData(){
         this.labelFirstName.setText(patient.getFirstName());
         this.labelSurname.setText(patient.getSurname());
     }
 
+    /**
+     * Creates and persists a treatment from the current form values.
+     */
     @FXML
     public void handleAdd(){
         LocalDate date = this.datePicker.getValue();
@@ -103,6 +116,11 @@ public class NewTreatmentController {
         stage.close();
     }
 
+    /**
+     * Persists a new treatment using the treatment DAO.
+     *
+     * @param treatment treatment to persist
+     */
     private void createTreatment(Treatment treatment) {
         TreatmentDao dao = DaoFactory.getDaoFactory().createTreatmentDao();
         try {
@@ -112,11 +130,19 @@ public class NewTreatmentController {
         }
     }
 
+    /**
+     * Closes the create-treatment dialog without saving.
+     */
     @FXML
     public void handleCancel(){
         stage.close();
     }
 
+    /**
+     * Validates the current form values for creating a treatment.
+     *
+     * @return true if input is invalid, otherwise false
+     */
     private boolean areInputDataInvalid() {
         if (this.textFieldBegin.getText() == null || this.textFieldEnd.getText() == null) {
             return true;

@@ -22,9 +22,22 @@ public class EncryptionUtil {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final SecretKey BOOTSTRAP_KEY = loadKey();
 
+    /**
+     * Utility class for AES-GCM encryption helpers.
+     */
     private EncryptionUtil() {
     }
 
+    /**
+     * Encrypts plain text using AES/GCM and returns a versioned payload.
+     * <p>
+     * The returned format is {@code enc:v1:<base64-iv>:<base64-ciphertext>}.
+     * </p>
+     *
+     * @param plainText the text to encrypt; may be {@code null}
+     * @return the encrypted payload, or {@code null} when {@code plainText} is {@code null}
+     * @throws DataEncryptionException when encryption fails
+     */
     public static String encrypt(String plainText) {
         if (plainText == null) {
             return null;
@@ -45,6 +58,13 @@ public class EncryptionUtil {
         }
     }
 
+    /**
+     * Decrypts a versioned AES/GCM payload produced by {@link #encrypt(String)}.
+     *
+     * @param encryptedText the encrypted payload; may be {@code null}
+     * @return the decrypted plain text, or {@code null} when {@code encryptedText} is {@code null}
+     * @throws DataEncryptionException when the payload format is invalid or decryption fails
+     */
     public static String decrypt(String encryptedText) {
         if (encryptedText == null) {
             return null;
@@ -73,15 +93,34 @@ public class EncryptionUtil {
         }
     }
 
+    /**
+     * Returns the statically loaded fallback key from configuration.
+     *
+     * @return the bootstrap encryption key
+     */
     public static SecretKey getBootstrapKey() {
         return BOOTSTRAP_KEY;
     }
 
+    /**
+     * Resolves the active data encryption key.
+     * <p>
+     * Uses the session key when available, otherwise falls back to the bootstrap key.
+     * </p>
+     *
+     * @return the key used for encryption and decryption
+     */
     private static SecretKey resolveKey() {
         SecretKey sessionKey = SessionManager.getInstance().getDataEncryptionKey();
         return sessionKey != null ? sessionKey : BOOTSTRAP_KEY;
     }
 
+    /**
+     * Loads and validates the application encryption key from configuration.
+     *
+     * @return a valid AES key
+     * @throws DataEncryptionException when the configuration value is missing or invalid
+     */
     private static SecretKey loadKey() {
         String encodedKey = Config.get("NHPLUS_ENCRYPTION_KEY");
         if (encodedKey == null || encodedKey.isBlank()) {
@@ -96,6 +135,13 @@ public class EncryptionUtil {
         return new SecretKeySpec(keyBytes, KEY_ALGORITHM);
     }
 
+    /**
+     * Decodes the configured key value either as Base64 or raw UTF-8 bytes.
+     *
+     * @param encodedKey the configured key value
+     * @return key bytes with AES-256 length
+     * @throws DataEncryptionException when the value cannot be decoded to 32 bytes
+     */
     private static byte[] decodeConfiguredKey(String encodedKey) {
         try {
             byte[] decoded = Base64.getDecoder().decode(encodedKey);
@@ -114,6 +160,12 @@ public class EncryptionUtil {
         throw new DataEncryptionException("NHPLUS_ENCRYPTION_KEY must be a 32-byte AES key or Base64-encoded 32-byte key.");
     }
 
+    /**
+     * Generates a new random AES-256 key and returns it as Base64.
+     *
+     * @return a Base64-encoded AES-256 key
+     * @throws DataEncryptionException when key generation fails
+     */
     public static String generateBase64Key() {
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM);

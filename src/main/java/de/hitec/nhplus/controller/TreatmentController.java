@@ -50,6 +50,13 @@ public class TreatmentController {
     private Patient patient;
     private Treatment treatment;
 
+    /**
+     * Initializes the detail view with treatment data and role-based field permissions.
+     *
+     * @param controller parent controller to refresh after updates
+     * @param stage stage of the detail window
+     * @param treatment treatment to display
+     */
     public void initializeController(AllTreatmentController controller, Stage stage, Treatment treatment) {
         this.stage = stage;
         this.controller= controller;
@@ -102,6 +109,9 @@ public class TreatmentController {
         }
     }
 
+    /**
+     * Populates all UI fields with data from the current patient and treatment.
+     */
     private void showData(){
         this.labelPatientName.setText(patient.getSurname()+", "+patient.getFirstName());
         this.labelCareLevel.setText(patient.getCareLevel());
@@ -135,6 +145,9 @@ public class TreatmentController {
         }
     }
 
+    /**
+     * Saves changes from the UI back into the selected treatment and persists them.
+     */
     @FXML
     public void handleChange() {
 
