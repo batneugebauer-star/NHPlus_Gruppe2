@@ -89,6 +89,9 @@ public class AllTreatmentController {
         }
     }
 
+    /**
+     * Reloads treatments from the database and applies role-based visibility filters.
+     */
     public void readAllAndShowInTableView() {
         this.treatments.clear();
         comboBoxPatientSelection.getSelectionModel().select(0);
@@ -117,6 +120,9 @@ public class AllTreatmentController {
         }
     }
 
+    /**
+     * Fills the patient selection combo box with all available patients.
+     */
     private void createComboBoxData() {
         patientSelection.clear();
         patientSelection.add("alle");
@@ -134,10 +140,19 @@ public class AllTreatmentController {
         }
     }
 
+    /**
+     * Formats a patient for display inside the selection combo box.
+     *
+     * @param patient patient to format
+     * @return display name in the form "surname, firstName"
+     */
     private String formatPatientDisplayName(Patient patient) {
         return String.format("%s, %s", patient.getSurname(), patient.getFirstName());
     }
 
+    /**
+     * Filters displayed treatments based on the selected patient in the combo box.
+     */
     @FXML
     public void handleComboBox() {
         String selectedPatient = this.comboBoxPatientSelection.getSelectionModel().getSelectedItem();
@@ -172,6 +187,9 @@ public class AllTreatmentController {
         return null;
     }
 
+    /**
+     * Deletes the currently selected treatment if permissions allow it.
+     */
     @FXML
     public void handleDelete() {
 

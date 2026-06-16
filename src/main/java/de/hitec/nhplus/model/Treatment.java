@@ -58,54 +58,120 @@ public class Treatment {
         this.remarks = remarks;
     }
 
+    /**
+     * Returns the treatment id.
+     *
+     * @return treatment id
+     */
     public long getTid() {
         return tid;
     }
 
+    /**
+     * Returns the id of the treated patient.
+     *
+     * @return patient id
+     */
     public long getPid() {
         return this.pid;
     }
 
+    /**
+     * Returns the treatment date as string.
+     *
+     * @return treatment date
+     */
     public String getDate() {
         return date.toString();
     }
 
+    /**
+     * Returns the start time as string.
+     *
+     * @return begin time
+     */
     public String getBegin() {
         return begin.toString();
     }
 
+    /**
+     * Returns the end time as string.
+     *
+     * @return end time
+     */
     public String getEnd() {
         return end.toString();
     }
 
+    /**
+     * Sets the treatment date from a formatted string.
+     *
+     * @param date treatment date string
+     */
     public void setDate(String date) {
         this.date = DateConverter.convertStringToLocalDate(date);
     }
 
+    /**
+     * Sets the start time from a formatted string.
+     *
+     * @param begin begin time string
+     */
     public void setBegin(String begin) {
         this.begin = DateConverter.convertStringToLocalTime(begin);
     }
 
+    /**
+     * Sets the end time from a formatted string.
+     *
+     * @param end end time string
+     */
     public void setEnd(String end) {
         this.end = DateConverter.convertStringToLocalTime(end);
     }
 
+    /**
+     * Returns the treatment description.
+     *
+     * @return description text
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets the treatment description.
+     *
+     * @param description description text
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Returns remarks for the treatment.
+     *
+     * @return remarks text
+     */
     public String getRemarks() {
         return remarks;
     }
 
+    /**
+     * Sets remarks for the treatment.
+     *
+     * @param remarks remarks text
+     */
     public void setRemarks(String remarks) {
         this.remarks = remarks;
     }
 
+    /**
+     * Returns a human-readable representation of this treatment.
+     *
+     * @return treatment details as text
+     */
+    @Override
     public String toString() {
         return "\nBehandlung" + "\nTID: " + this.tid +
                 "\nPID: " + this.pid +

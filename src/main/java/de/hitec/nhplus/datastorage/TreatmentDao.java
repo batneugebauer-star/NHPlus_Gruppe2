@@ -210,10 +210,22 @@ public class TreatmentDao extends DaoImp<Treatment> {
         return preparedStatement;
     }
 
+    /**
+     * Encrypts plaintext values before persisting treatment data.
+     *
+     * @param plainText plaintext value
+     * @return encrypted value
+     */
     private String encrypt(String plainText) {
         return EncryptionUtil.encrypt(plainText);
     }
 
+    /**
+     * Decrypts encrypted values after reading treatment data.
+     *
+     * @param encryptedText encrypted value
+     * @return decrypted plaintext value
+     */
     private String decrypt(String encryptedText) {
         return EncryptionUtil.decrypt(encryptedText);
     }
