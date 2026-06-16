@@ -10,10 +10,21 @@ import java.util.ArrayList;
  */
 public class CaregiverDao extends DaoImp<Caregiver> {
 
+    /**
+     * Creates a DAO instance for caregiver persistence.
+     *
+     * @param connection active database connection
+     */
     public CaregiverDao(Connection connection) {
         super(connection);
     }
 
+    /**
+     * Builds the SQL statement for creating a caregiver record.
+     *
+     * @param caregiver caregiver data to persist
+     * @return prepared insert statement
+     */
     @Override
     protected PreparedStatement getCreateStatement(Caregiver caregiver) {
         PreparedStatement statement = null;
@@ -38,6 +49,12 @@ public class CaregiverDao extends DaoImp<Caregiver> {
         return statement;
     }
 
+    /**
+     * Builds the SQL statement for reading one caregiver by id.
+     *
+     * @param cid caregiver id
+     * @return prepared select statement
+     */
     @Override
     protected PreparedStatement getReadByIDStatement(long cid) {
         PreparedStatement statement = null;
@@ -56,6 +73,13 @@ public class CaregiverDao extends DaoImp<Caregiver> {
         return statement;
     }
 
+    /**
+     * Creates a caregiver instance from the current row of a result set.
+     *
+     * @param result result set positioned on a caregiver row
+     * @return mapped caregiver object
+     * @throws SQLException if reading columns fails
+     */
     @Override
     protected Caregiver getInstanceFromResultSet(ResultSet result) throws SQLException {
         return new Caregiver(
@@ -67,6 +91,11 @@ public class CaregiverDao extends DaoImp<Caregiver> {
         );
     }
 
+    /**
+     * Builds the SQL statement for reading all caregivers.
+     *
+     * @return prepared select-all statement
+     */
     @Override
     protected PreparedStatement getReadAllStatement() {
         PreparedStatement statement = null;
@@ -82,6 +111,13 @@ public class CaregiverDao extends DaoImp<Caregiver> {
         return statement;
     }
 
+    /**
+     * Creates a list of caregivers from a result set.
+     *
+     * @param result result set containing caregiver rows
+     * @return list of mapped caregiver objects
+     * @throws SQLException if reading rows fails
+     */
     @Override
     protected ArrayList<Caregiver> getListFromResultSet(ResultSet result) throws SQLException {
         ArrayList<Caregiver> list = new ArrayList<>();
@@ -100,6 +136,12 @@ public class CaregiverDao extends DaoImp<Caregiver> {
         return list;
     }
 
+    /**
+     * Builds the SQL statement for updating a caregiver record.
+     *
+     * @param caregiver caregiver data to update
+     * @return prepared update statement
+     */
     @Override
     protected PreparedStatement getUpdateStatement(Caregiver caregiver) {
         PreparedStatement statement = null;
@@ -128,6 +170,12 @@ public class CaregiverDao extends DaoImp<Caregiver> {
         return statement;
     }
 
+    /**
+     * Builds the SQL statement for deleting a caregiver by id.
+     *
+     * @param cid caregiver id
+     * @return prepared delete statement
+     */
     @Override
     protected PreparedStatement getDeleteStatement(long cid) {
         PreparedStatement statement = null;

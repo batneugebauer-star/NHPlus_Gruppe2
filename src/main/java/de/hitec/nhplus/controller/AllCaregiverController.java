@@ -57,8 +57,11 @@ public class AllCaregiverController {
 
     private CaregiverDao dao;
 
+    /**
+     * Initializes the caregiver table view, form controls, role options,
+     * and permission-based UI behavior.
+     */
     public void initialize() {
-
         readAllAndShowInTableView();
 // Rollen für neue Pflegekräfte
         cmbRole.getItems().addAll(
@@ -120,6 +123,11 @@ public class AllCaregiverController {
         textFieldTelephone.textProperty().addListener(listener);
     }
 
+    /**
+     * Handles edits of a caregiver's first name in the table.
+     *
+     * @param event edit event containing the updated first name
+     */
     @FXML
     public void handleOnEditFirstname(
             TableColumn.CellEditEvent<Caregiver, String> event) {
@@ -128,6 +136,11 @@ public class AllCaregiverController {
         doUpdate(event.getRowValue());
     }
 
+    /**
+     * Handles edits of a caregiver's surname in the table.
+     *
+     * @param event edit event containing the updated surname
+     */
     @FXML
     public void handleOnEditSurname(
             TableColumn.CellEditEvent<Caregiver, String> event) {
@@ -136,6 +149,11 @@ public class AllCaregiverController {
         doUpdate(event.getRowValue());
     }
 
+    /**
+     * Handles edits of a caregiver's telephone number in the table.
+     *
+     * @param event edit event containing the updated telephone number
+     */
     @FXML
     public void handleOnEditTelephone(
             TableColumn.CellEditEvent<Caregiver, String> event) {
@@ -144,6 +162,11 @@ public class AllCaregiverController {
         doUpdate(event.getRowValue());
     }
 
+    /**
+     * Handles edits of a caregiver's role in the table.
+     *
+     * @param event edit event containing the updated role
+     */
     @FXML
     public void handleOnEditQualification(
             TableColumn.CellEditEvent<Caregiver, String> event) {
@@ -152,6 +175,11 @@ public class AllCaregiverController {
         doUpdate(event.getRowValue());
     }
 
+    /**
+     * Persists changes of a caregiver to the database.
+     *
+     * @param caregiver caregiver instance with modified values
+     */
     private void doUpdate(Caregiver caregiver) {
         try {
             dao.update(caregiver);
@@ -160,6 +188,9 @@ public class AllCaregiverController {
         }
     }
 
+    /**
+     * Loads all caregivers from the database and displays them in the table.
+     */
     private void readAllAndShowInTableView() {
 
         caregivers.clear();
@@ -174,6 +205,9 @@ public class AllCaregiverController {
         }
     }
 
+    /**
+     * Deletes the currently selected caregiver from the database and table.
+     */
     @FXML
     public void handleDelete() {
 
@@ -190,6 +224,9 @@ public class AllCaregiverController {
         }
     }
 
+    /**
+     * Creates a new caregiver from form input and stores it in the database.
+     */
     @FXML
     public void handleAdd() {
 
@@ -226,6 +263,9 @@ public class AllCaregiverController {
         }
     }
 
+    /**
+     * Clears all input fields in the add-caregiver form.
+     */
     private void clearTextfields() {
 
         textFieldFirstName.clear();
@@ -234,6 +274,12 @@ public class AllCaregiverController {
         cmbRole.getSelectionModel().clearSelection();
     }
 
+    /**
+     * Validates whether all required input fields for creating a caregiver
+     * contain values.
+     *
+     * @return true if all required fields are filled, otherwise false
+     */
     private boolean areInputDataValid() {
 
         return !textFieldFirstName.getText().isBlank()

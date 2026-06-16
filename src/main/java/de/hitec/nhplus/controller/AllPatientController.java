@@ -119,7 +119,12 @@ public class AllPatientController {
         this.textFieldAssets.textProperty().addListener(inputNewPatientListener);
     }
 
-    // Initialisiert editierbare Tabellenspalten
+    /**
+     * Configures a table column as editable text column bound to the given patient property.
+     *
+     * @param column table column to configure
+     * @param property property name used by {@link PropertyValueFactory}
+     */
     private void setupEditableColumn(TableColumn<Patient, String> column, String property) {
         column.setCellValueFactory(new PropertyValueFactory<>(property));
         column.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -308,6 +313,11 @@ public class AllPatientController {
         this.textFieldAssets.clear();
     }
 
+    /**
+     * Validates the add-patient input fields and checks date formatting.
+     *
+     * @return true if all required inputs are present and valid, otherwise false
+     */
     private boolean areInputDataValid() {
         if (!PermissionManager.canManagePatients()) {
             return !this.textFieldFirstName.getText().isBlank() &&

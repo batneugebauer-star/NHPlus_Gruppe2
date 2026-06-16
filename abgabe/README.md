@@ -29,3 +29,16 @@ Die Aufgabenstellungen selbst liegen unverändert in `../doc/`. Jede Abgabe-Date
 ## Bewertung
 
 Wie bewertet wird, steht im [Bewertungsraster](../doc/Bewertungsraster.md). Die Gewichtungen pro AB stehen dort.
+
+
+
+## Kommentare der Gruppe
+
+Das in User Story 3 angesprochene Event Log wäre eher eine eigene User Story wert gewesen, da es doch recht umfangreich ist. Deshalb funktionieren die darauf aufbauenden Testfälle der Story in der Abgabeversin des Programms nicht.
+Die in User Story 3 angesprochenen Sonderspalten zu Änderungszeitpunkt und -Rolle wurden aus zeitgründen nicht mehr umgesetzt, da sie abhängig vom Rollensystem und damit vom Loginsystem sind. Das Rollensystem wurde aufgrund eines Krankheitsfalls erst sehr spät umgesetzt.
+In USer Story 4 Entfallen die Testfälle 3 und 6, da die entsprechenden Fenster, und Buttons für nicht berechtigte User nicht angezeigt werden.
+In User Story 5 Entfällt aufgrund von Zeitmangel der Testfall 3, da die Rollenberechtigungen zur Zeit so implementiert sind, dass ein NICHT Admin seine Rolle beim Login selbst bestimmt.
+User Story 5 ist durch die Verschlüsselung und Loginberechtigungen obsolet geworden.
+
+
+Weitere Testfälle die hier nicht begründet sind, sind auch als Issue im Repository auf Github dokumentiert.
