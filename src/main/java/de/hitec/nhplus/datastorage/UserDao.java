@@ -9,13 +9,28 @@ import java.util.ArrayList;
 /**
  * Kümmert sich um alle Datenbankoperationen für die user-Tabelle.
  * Folgt demselben Muster wie PatientDao und TreatmentDao.
+ *
+ * Speichert neben Benutzername, Passwort-Hash und Salt auch Felder
+ * für eine separate Verschlüsselungs-Funktion (wrapped_encryption_key)
+ * und eine Rolle (role).
  */
 public class UserDao extends DaoImp<User> {
+    /**
+     * Erstellt ein neues UserDao mit einer Datenbankverbindung.
+     *
+     * @param connection die Verbindung zur Datenbank
+     */
     public UserDao(Connection connection) {
         super(connection);
     }
 
-    // Tabelle anlegen falls sie noch nicht existiert
+    /**
+     * Legt die user-Tabelle an, falls sie noch nicht existiert.
+     * Prüft zusätzlich, ob bereits vorhandene user-Tabellen (z.B. aus
+     * einem alten Datenbankstand) die neueren Spalten für Rolle und
+     * Verschlüsselung schon besitzen, und fügt sie notfalls nachträglich
+     * per ALTER TABLE hinzu (siehe ensureColumnExists).
+     */
     public void createTableIfNotExists() {
         final String SQL =
                 "CREATE TABLE IF NOT EXISTS user (" +
@@ -41,8 +56,15 @@ public class UserDao extends DaoImp<User> {
             System.out.println("UserDao.createTableIfNotExists: " + e.getMessage());
         }
     }
+    /**
+     * Sucht einen Benutzer anhand seines Benutzernamens.
+     * Wird beim Login gebraucht um Hash und Salt aus der Datenbank zu laden.
+     *
+     * @param username der gesuchte Benutzername
+     * @return das gefundene User-Objekt oder null, wenn kein User existiert
+     * @throws SQLException wenn ein Datenbankfehler auftritt
+     */
 
-    // Sucht einen User anhand des Benutzernamens und gibt null zurück wenn nicht gefunden
     public User findByUsername(String username) throws SQLException {
         final String SQL = "SELECT * FROM user WHERE username = ?";
         try (PreparedStatement stmt = connection.prepareStatement(SQL)) {
@@ -55,7 +77,14 @@ public class UserDao extends DaoImp<User> {
         return null;
     }
 
-    // Aktualisiert Hash + Salt eines Benutzers (für Passwort-Reset)
+    /**
+     * Aktualisiert Passwort-Hash, Salt und die Verschlüsselungs-Felder
+     * eines Benutzers in der Datenbank. Wird beim Passwort-Reset durch
+     * einen Admin benutzt.
+     *
+     * @param user der Benutzer mit den neuen Werten
+     * @throws SQLException wenn ein Datenbankfehler auftritt
+     */
     public void updatePassword(User user) throws SQLException {
         final String SQL =
                 "UPDATE user SET password_hash = ?, salt = ?, wrapped_encryption_key = ?, " +
@@ -72,7 +101,14 @@ public class UserDao extends DaoImp<User> {
             stmt.executeUpdate();
         }
     }
-
+    /**
+     * Baut aus einer Datenbankzeile ein vollständiges User-Objekt zusammen,
+     * inklusive Rolle und Verschlüsselungs-Feldern.
+     *
+     * @param rs das ResultSet mit den Daten aus der Datenbank
+     * @return das fertige User-Objekt
+     * @throws SQLException wenn ein Datenbankfehler auftritt
+     */
     @Override
     protected User getInstanceFromResultSet(ResultSet rs) throws SQLException {
 
@@ -97,6 +133,13 @@ public class UserDao extends DaoImp<User> {
         return user;
     }
 
+    /**
+     * Baut aus mehreren Datenbankzeilen eine Liste von User-Objekten.
+     *
+     * @param rs das ResultSet mit mehreren Zeilen
+     * @return die Liste aller gefundenen User
+     * @throws SQLException wenn ein Datenbankfehler auftritt
+     */
     @Override
     protected ArrayList<User> getListFromResultSet(ResultSet rs) throws SQLException {
         ArrayList<User> list = new ArrayList<>();
@@ -105,6 +148,14 @@ public class UserDao extends DaoImp<User> {
         }
         return list;
     }
+
+    /**
+     * Erstellt das SQL-Statement um einen neuen Benutzer mit allen Feldern
+     * (inklusive Rolle und Verschlüüsselungs-Daten) in die Datenbank einzufuegen.
+     *
+     * @param user der neue Benutzer der gespeichert werden soll
+     * @return das fertige PreparedStatement
+     */
 
     @Override
     protected PreparedStatement getCreateStatement(User user) {
@@ -129,6 +180,13 @@ public class UserDao extends DaoImp<User> {
         }
     }
 
+    /**
+     * Erstellt das SQL-Statement um einen Benutzer anhand seiner uid zu suchen.
+     *
+     * @param key die uid des gesuchten Benutzers
+     * @return das fertige PreparedStatement
+     */
+
     @Override
     protected PreparedStatement getReadByIDStatement(long key) {
         try {
@@ -141,6 +199,11 @@ public class UserDao extends DaoImp<User> {
         }
     }
 
+    /**
+     * Erstellt das SQL-Statement um alle Benutzer aus der Datenbank zu lesen.
+     *
+     * @return das fertige PreparedStatement
+     */
     @Override
     protected PreparedStatement getReadAllStatement() {
         try {
@@ -150,6 +213,13 @@ public class UserDao extends DaoImp<User> {
         }
     }
 
+    /**
+     * Erstellt das SQL-Statement, um einen Benutzer mit allen Feldern
+     * in der Datenbank zu aktualisieren.
+     *
+     * @param user der Benutzer mit den neuen Daten
+     * @return das fertige PreparedStatement
+     */
     @Override
     protected PreparedStatement getUpdateStatement(User user) {
         final String SQL =
@@ -172,7 +242,12 @@ public class UserDao extends DaoImp<User> {
             throw new RuntimeException(e);
         }
     }
-
+    /**
+     * Erstellt das SQL-Statement um einen Benutzer aus der Datenbank zu loeschen.
+     *
+     * @param key die uid des zu löschenden Benutzers
+     * @return das fertige PreparedStatement
+     */
     @Override
     protected PreparedStatement getDeleteStatement(long key) {
         try {
@@ -185,6 +260,16 @@ public class UserDao extends DaoImp<User> {
         }
     }
 
+    /**
+     * Stellt sicher, dass eine bestimmte Spalte in der user-Tabelle existiert.
+     * Wird gebraucht, falls die Tabelle aus einem älteren Datenbankstand
+     * stammt, der diese Spalte noch nicht hatte. Fügt die Spalte notfalls
+     * per ALTER TABLE nachträglich hinzu.
+     *
+     * @param columnName der Name der Spalte
+     * @param definition der SQL-Typ der Spalte (z.B. "TEXT" oder "INTEGER")
+     * @throws SQLException wenn ein Datenbankfehler auftritt
+     */
     private void ensureColumnExists(String columnName, String definition) throws SQLException {
         if (hasColumn(columnName)) {
             return;
@@ -195,7 +280,14 @@ public class UserDao extends DaoImp<User> {
             stmt.execute(SQL);
         }
     }
-
+    /**
+     * Prüft, ob die user-Tabelle bereits eine Spalte mit dem gegebenen
+     * Namen besitzt. Liest dafür die Tabellenstruktur per PRAGMA table_info aus.
+     *
+     * @param columnName der zu prüfende Spaltenname
+     * @return true wenn die Spalte existiert, sonst false
+     * @throws SQLException wenn ein Datenbankfehler auftritt
+     */
     private boolean hasColumn(String columnName) throws SQLException {
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery("PRAGMA table_info(user)")) {
