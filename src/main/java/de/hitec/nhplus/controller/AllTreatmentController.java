@@ -49,6 +49,9 @@ public class AllTreatmentController {
     @FXML
     private Button buttonDelete;
 
+    @FXML
+    private Button buttonNewTreament;
+
     private TreatmentDao dao;
     private final ObservableList<String> patientSelection = FXCollections.observableArrayList();
     private final ObservableList<Treatment> treatments = FXCollections.observableArrayList();
@@ -75,6 +78,15 @@ public class AllTreatmentController {
                         AllTreatmentController.this.buttonDelete.setDisable(newTreatment == null));
 
         this.createComboBoxData();
+        de.hitec.nhplus.model.Role role =
+                de.hitec.nhplus.utils.PermissionManager.getRole();
+
+        if (role == de.hitec.nhplus.model.Role.LEITER
+                || role == de.hitec.nhplus.model.Role.NURSING_ASSISTANT) {
+
+            buttonDelete.setDisable(true);
+            buttonNewTreament.setDisable(true);
+        }
     }
 
     public void readAllAndShowInTableView() {
@@ -82,7 +94,24 @@ public class AllTreatmentController {
         comboBoxPatientSelection.getSelectionModel().select(0);
         this.dao = DaoFactory.getDaoFactory().createTreatmentDao();
         try {
-            this.treatments.addAll(dao.readAll());
+            java.util.List<de.hitec.nhplus.model.Treatment> allTreatments = dao.readAll();
+            de.hitec.nhplus.model.Role currentRole = de.hitec.nhplus.utils.PermissionManager.getRole();
+
+            for (de.hitec.nhplus.model.Treatment t : allTreatments) {
+                if (currentRole == de.hitec.nhplus.model.Role.ADMIN || currentRole == de.hitec.nhplus.model.Role.LEITER) {
+                    this.treatments.add(t);
+                }
+                else if (currentRole == de.hitec.nhplus.model.Role.DOCTOR && t.getDescription().toLowerCase().contains("medizinisch")) {
+                    this.treatments.add(t);
+                }
+                else if (currentRole == de.hitec.nhplus.model.Role.THERAPIST && t.getDescription().toLowerCase().contains("therapie")) {
+                    this.treatments.add(t);
+                }
+                else if ((currentRole == de.hitec.nhplus.model.Role.REGISTERED_NURSE || currentRole == de.hitec.nhplus.model.Role.NURSING_ASSISTANT)
+                        && !t.getDescription().toLowerCase().contains("therapie")) {
+                    this.treatments.add(t);
+                }
+            }
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
@@ -145,9 +174,31 @@ public class AllTreatmentController {
 
     @FXML
     public void handleDelete() {
+
+        de.hitec.nhplus.model.Role role =
+                de.hitec.nhplus.utils.PermissionManager.getRole();
+
+        if (role == de.hitec.nhplus.model.Role.LEITER
+                || role == de.hitec.nhplus.model.Role.NURSING_ASSISTANT) {
+
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Keine Berechtigung");
+            alert.setHeaderText(null);
+            alert.setContentText("Sie dürfen keine Behandlungen löschen.");
+            alert.showAndWait();
+            return;
+        }
+
         int index = this.tableView.getSelectionModel().getSelectedIndex();
+
+        if (index < 0) {
+            return;
+        }
+
         Treatment t = this.treatments.remove(index);
+
         TreatmentDao dao = DaoFactory.getDaoFactory().createTreatmentDao();
+
         try {
             dao.deleteById(t.getTid());
         } catch (SQLException exception) {

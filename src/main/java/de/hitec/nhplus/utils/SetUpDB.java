@@ -39,6 +39,7 @@ public class SetUpDB {
         SetUpDB.setUpTableTreatment(connection);
         SetUpDB.setUpTableEventLog(connection);
         SetUpDB.setUpTableUser(connection);
+        SetUpDB.setUpTableCaregiver(connection);
         SetUpDB.setUpPatients();
         SetUpDB.setUpTreatments();
         SetUpDB.setUpUserTable();
@@ -53,6 +54,7 @@ public class SetUpDB {
             statement.execute("DROP TABLE IF EXISTS patient");
             statement.execute("DROP TABLE IF EXISTS eventlog");
             statement.execute("DROP TABLE IF EXISTS user");
+            statement.execute("DROP TABLE IF EXISTS caregiver");
         } catch (SQLException exception) {
             System.out.println(exception.getMessage());
         }
@@ -103,6 +105,21 @@ public class SetUpDB {
                         "timestamp TEXT NOT NULL" +
                         ");";
 
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(SQL);
+        } catch (SQLException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+
+    private static void setUpTableCaregiver(Connection connection) {
+        final String SQL = "CREATE TABLE IF NOT EXISTS caregiver (" +
+                "   cid INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "   firstname TEXT NOT NULL, " +
+                "   surname TEXT NOT NULL, " +
+                "   phonenumber TEXT NOT NULL, " +
+                "   role TEXT NOT NULL" +
+                ");";
         try (Statement statement = connection.createStatement()) {
             statement.execute(SQL);
         } catch (SQLException exception) {

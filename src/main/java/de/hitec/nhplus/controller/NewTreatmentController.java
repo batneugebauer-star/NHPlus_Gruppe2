@@ -83,9 +83,22 @@ public class NewTreatmentController {
         LocalTime begin = DateConverter.convertStringToLocalTime(textFieldBegin.getText());
         LocalTime end = DateConverter.convertStringToLocalTime(textFieldEnd.getText());
         String description = textFieldDescription.getText();
-        String remarks = textAreaRemarks.getText();
-        Treatment treatment = new Treatment(patient.getPid(), date, begin, end, description, remarks);
-        createTreatment(treatment);
+        String rawRemarks = textAreaRemarks.getText() != null ? textAreaRemarks.getText().trim() : "";
+        String remarks = rawRemarks;
+        if (!rawRemarks.isEmpty()) {
+            de.hitec.nhplus.model.Role currentRole = de.hitec.nhplus.utils.PermissionManager.getRole();
+
+            if (currentRole == de.hitec.nhplus.model.Role.ADMIN || currentRole == de.hitec.nhplus.model.Role.LEITER) {
+                remarks = "Pflege: " + rawRemarks;
+            } else if (currentRole == de.hitec.nhplus.model.Role.REGISTERED_NURSE || currentRole == de.hitec.nhplus.model.Role.NURSING_ASSISTANT) {
+                remarks = "Pflege: " + rawRemarks;
+            } else if (currentRole == de.hitec.nhplus.model.Role.DOCTOR) {
+                remarks = "Diagnose: " + rawRemarks;
+            } else if (currentRole == de.hitec.nhplus.model.Role.THERAPIST) {
+                remarks = "Therapie: " + rawRemarks;
+            }
+        }
+        Treatment treatment = new Treatment(patient.getPid(), date, begin, end, description, remarks);createTreatment(treatment);
         controller.readAllAndShowInTableView();
         stage.close();
     }
