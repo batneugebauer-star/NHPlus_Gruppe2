@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * Utility class to load configuration properties from a file.
+ */
 public class Config {
 
     private static final Properties properties = new Properties();
