@@ -25,6 +25,13 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
+
+        try {
+            de.hitec.nhplus.datastorage.ConnectionBuilder.getConnection().createStatement().execute(
+                    "CREATE TABLE IF NOT EXISTS caregiver (cid INTEGER PRIMARY KEY AUTOINCREMENT, firstname TEXT, surname TEXT, phonenumber TEXT, role TEXT);"
+            );
+        } catch(Exception e){}
+
         // user tabelle anlegen falls noch nicht vorhanden
         SetUpDB.setUpUserTable();
         // zuerst Login fenster zeigen

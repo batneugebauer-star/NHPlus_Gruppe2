@@ -1,18 +1,10 @@
 package de.hitec.nhplus.model;
 
 public enum Role {
-
     ADMIN,
-
-    NURSING_HOME_MANAGER,
-
-    WARD_MANAGER,
-
+    LEITER,            // Fasst Heimleiter und Wohnbereichsleiter zusammen
     REGISTERED_NURSE,
-
     NURSING_ASSISTANT,
-
     DOCTOR,
-
     THERAPIST
 }

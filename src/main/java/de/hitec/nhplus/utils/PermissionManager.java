@@ -1,56 +1,63 @@
 package de.hitec.nhplus.utils;
 
 import de.hitec.nhplus.model.Role;
-import de.hitec.nhplus.model.User;
 
 public class PermissionManager {
 
-    private static User currentUser() {
-        return SessionManager.getInstance().getLoggedInUser();
+    private PermissionManager() {
     }
 
-    private static Role currentRole() {
-
-        if (currentUser() == null) {
+    public static Role getRole() {
+        if (!SessionManager.getInstance().isLoggedIn()) {
             return null;
         }
 
-        return currentUser().getRole();
+        if (SessionManager.getInstance().getLoggedInUser().isSuperUser()) {
+            return Role.ADMIN;
+        }
+
+        Role role = SessionManager.getInstance().getLoggedInUser().getRole();
+        return role != null ? role : Role.REGISTERED_NURSE;
     }
 
-    public static boolean canManageRoles() {
-        return currentRole() == Role.ADMIN;
+    public static boolean isAdmin() {
+        return getRole() == Role.ADMIN;
+    }
+
+    public static boolean canManagePatients() {
+        Role role = getRole();
+        return role == Role.ADMIN || role == Role.LEITER;
     }
 
     public static boolean canManageCaregivers() {
-        return currentRole() == Role.ADMIN
-                || currentRole() == Role.NURSING_HOME_MANAGER
-                || currentRole() == Role.WARD_MANAGER;
+        Role role = getRole();
+        return role == Role.ADMIN || role == Role.LEITER;
     }
 
-    public static boolean canEditResidents() {
-        return currentRole() == Role.ADMIN
-                || currentRole() == Role.NURSING_HOME_MANAGER
-                || currentRole() == Role.WARD_MANAGER;
+    public static boolean canManageDiagnoses() {
+        Role role = getRole();
+        return role == Role.ADMIN || role == Role.DOCTOR;
     }
 
-    public static boolean canEditNursingDocumentation() {
-        return currentRole() == Role.ADMIN
-                || currentRole() == Role.NURSING_HOME_MANAGER
-                || currentRole() == Role.WARD_MANAGER
-                || currentRole() == Role.REGISTERED_NURSE
-                || currentRole() == Role.NURSING_ASSISTANT;
+    public static boolean canManageNursingDocumentation() {
+        Role role = getRole();
+        return role == Role.ADMIN
+                || role == Role.REGISTERED_NURSE;
     }
 
-    public static boolean canEditDiagnoses() {
-        return currentRole() == Role.DOCTOR;
-    }
-
-    public static boolean canDocumentTherapy() {
-        return currentRole() == Role.THERAPIST;
+    public static boolean canManageTherapies() {
+        Role role = getRole();
+        return role == Role.ADMIN
+                || role == Role.THERAPIST;
     }
 
     public static boolean canViewResidents() {
-        return currentRole() != null;
+        return getRole() != null;
     }
+
+    public static boolean canManageRoles() {
+        Role role = getRole();
+        return role == Role.ADMIN || role == Role.LEITER;
+    }
+
 }
