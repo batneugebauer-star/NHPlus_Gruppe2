@@ -39,3 +39,6 @@ Die in User Story 3 angesprochenen Sonderspalten zu Änderungszeitpunkt und -Rol
 In USer Story 4 Entfallen die Testfälle 3 und 6, da die entsprechenden Fenster, und Buttons für nicht berechtigte User nicht angezeigt werden.
 In User Story 5 Entfällt aufgrund von Zeitmangel der Testfall 3, da die Rollenberechtigungen zur Zeit so implementiert sind, dass ein NICHT Admin seine Rolle beim Login selbst bestimmt.
 User Story 5 ist durch die Verschlüsselung und Loginberechtigungen obsolet geworden.
+
+
+Weitere Testfälle die hier nicht begründet sind, sind auch als Issue im Repository auf Github dokumentiert.
