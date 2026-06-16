@@ -47,3 +47,10 @@ Beim Zurücksetzen eines Passworts wird aktuell der Verschlüsselungsschlüssel 
 Die neue Funktionalität ist direkt in die bestehenden Login-Klassen eingebaut worden, statt sie in eigene Klassen auszulagern. Eine sauberere Trennung nach dem Single-Responsibility-Prinzip wäre hier rückblickend sinnvoll gewesen.
 Aufgrund krankheitsbedingter Ausfälle im Team konnte nicht jede Methode, die im Rahmen dieser Erweiterung entstanden ist, im gleichen Umfang mit Javadoc dokumentiert werden wie der ursprüngliche Login-Workstream. Wir haben uns daher entschieden, zunächst die die Methoden vollständig zu dokumentieren, die wir selbst geschrieben oder vollständig nachvollzogen haben und werden die Dokumentation der übrigen Methoden nachziehen, sobald die personelle Verfügbarkeit es zulässt.
 Wir sehen das insgesamt als guten Lernpunkt für die Code-Review im Team: Funktionsüberschneidungen zwischen Workstreams früher abzusprechen, bevor mehrere Personen an derselben Klasse arbeiten, und Dokumentation kontinuierlich statt erst am Ende zu pflegen.
+
+
+Passworter: 
+admin: admin123;
+pflege: pflege1;
+für alle rollen:
+    "rollenname": "rollenname123";
