@@ -33,6 +33,7 @@ public class SetUpDB {
         SetUpDB.setUpTablePatient(connection);
         SetUpDB.setUpTableTreatment(connection);
         SetUpDB.setUpTableCaregiver(connection);
+        SetUpDB.setUpTableEventLog(connection);
         SetUpDB.setUpPatients();
         SetUpDB.setUpTreatments();
         SetUpDB.setUpUserTable();
@@ -45,6 +46,7 @@ public class SetUpDB {
         try (Statement statement = connection.createStatement()) {
             statement.execute("DROP TABLE IF EXISTS treatment");
             statement.execute("DROP TABLE IF EXISTS patient");
+            statement.execute("DROP TABLE IF EXISTS eventlog");
             statement.execute("DROP TABLE IF EXISTS caregiver");
         } catch (SQLException exception) {
             System.out.println(exception.getMessage());
@@ -79,6 +81,22 @@ public class SetUpDB {
                 "   remark TEXT NOT NULL," +
                 "   FOREIGN KEY (pid) REFERENCES patient (pid) ON DELETE CASCADE " +
                 ");";
+
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(SQL);
+        } catch (SQLException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+    private static void setUpTableEventLog(Connection connection) {
+
+        final String SQL =
+                "CREATE TABLE IF NOT EXISTS eventlog (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "username TEXT NOT NULL, " +
+                        "action TEXT NOT NULL, " +
+                        "timestamp TEXT NOT NULL" +
+                        ");";
 
         try (Statement statement = connection.createStatement()) {
             statement.execute(SQL);

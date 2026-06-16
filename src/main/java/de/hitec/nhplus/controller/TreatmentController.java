@@ -64,12 +64,12 @@ public class TreatmentController {
         // Rollen-Sperre im Detail-Fenster
         de.hitec.nhplus.model.Role currentRole = de.hitec.nhplus.utils.PermissionManager.getRole();
 
-        // Erstmal alle drei Detail-Felder standardmäßig sperren
+        // Alle Detailfelder zunächst deaktivieren
         if (txtDetailDocumentation != null) txtDetailDocumentation.setDisable(true);
         if (txtDetailDiagnosis != null) txtDetailDiagnosis.setDisable(true);
         if (txtDetailTherapy != null) txtDetailTherapy.setDisable(true);
 
-        // Freischaltung exakt nach deiner Matrix (Admin/Leiter dürfen alles)
+        // Rollenabhängige Freigabe der Bearbeitungsfelder
         if (currentRole == de.hitec.nhplus.model.Role.ADMIN) {
 
             if (txtDetailDocumentation != null)

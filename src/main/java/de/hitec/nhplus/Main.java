@@ -33,7 +33,7 @@ public class Main extends Application {
         } catch(Exception e){}
 
         // user tabelle anlegen falls noch nicht vorhanden
-        SetUpDB.setUpUserTable();
+       // SetUpDB.setUpUserTable();
         // zuerst Login fenster zeigen
         showLoginWindow();
     }

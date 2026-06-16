@@ -119,7 +119,7 @@ public class AllPatientController {
         this.textFieldAssets.textProperty().addListener(inputNewPatientListener);
     }
 
-    // Hilfsmethode zur Spaltenkonfiguration (Optional, zur Code-Verkürzung)
+    // Initialisiert editierbare Tabellenspalten
     private void setupEditableColumn(TableColumn<Patient, String> column, String property) {
         column.setCellValueFactory(new PropertyValueFactory<>(property));
         column.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -279,7 +279,7 @@ public class AllPatientController {
             this.dao.create(patient);
 
             // Holt die Daten frisch aus der DB und aktualisiert die Tabelle
-            this.readAllAndShowInTableView(); // Korrigiert: Nutzt die Methode deiner Gruppe
+            this.readAllAndShowInTableView();
             this.tableView.refresh();
 
             this.textFieldFirstName.clear();

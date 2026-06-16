@@ -60,7 +60,7 @@ public class AllCaregiverController {
     public void initialize() {
 
         readAllAndShowInTableView();
-
+// Rollen für neue Pflegekräfte
         cmbRole.getItems().addAll(
                 "LEITER",
                 "REGISTERED_NURSE",
@@ -71,7 +71,7 @@ public class AllCaregiverController {
 
         Role currentRole =
                 de.hitec.nhplus.utils.PermissionManager.getRole();
-
+// Nur Admin und Leiter dürfen Pflegekräfte verwalten
         boolean hasAccess =
                 currentRole == Role.ADMIN ||
                         currentRole == Role.LEITER;
