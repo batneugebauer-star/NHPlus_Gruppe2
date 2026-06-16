@@ -5,32 +5,27 @@ import javafx.beans.property.SimpleStringProperty;
 
 public class Caregiver extends Person {
 
-    private SimpleLongProperty cid;
+    private final SimpleLongProperty cid;
     private final SimpleStringProperty phoneNumber;
-    private final SimpleStringProperty qualification;
     private final SimpleStringProperty role;
 
     // Für neue Einträge
-    public Caregiver(long cid, String firstName, String surname, String phoneNumber, SimpleStringProperty role) {
-        this(cid, firstName, surname, phoneNumber, "", role);
+    public Caregiver(long cid, String firstName, String surname, String phoneNumber) {
+        this(cid, firstName, surname, phoneNumber, "");
     }
 
-    public Caregiver(String firstName, String surname,
-                     String phoneNumber, String qualification, SimpleStringProperty role) {
-        super(firstName, surname);
-        this.role = role;
-        this.cid = new SimpleLongProperty(0);
-        this.phoneNumber = new SimpleStringProperty(phoneNumber);
-        this.qualification = new SimpleStringProperty(qualification);
+    // Für neue Einträge ohne ID
+    public Caregiver(String firstName, String surname, String phoneNumber, String role) {
+        this(0, firstName, surname, phoneNumber, role);
     }
 
+    // Vollständiger Konstruktor
     public Caregiver(long cid, String firstName, String surname,
-                     String phoneNumber, String qualification, SimpleStringProperty role) {
+                     String phoneNumber, String role) {
         super(firstName, surname);
         this.cid = new SimpleLongProperty(cid);
         this.phoneNumber = new SimpleStringProperty(phoneNumber);
-        this.qualification = new SimpleStringProperty(qualification);
-        this.role = role;
+        this.role = new SimpleStringProperty(role);
     }
 
     public long getCid() {
@@ -73,4 +68,4 @@ public class Caregiver extends Person {
     public SimpleStringProperty roleProperty() {
         return role;
     }
-    }
+}

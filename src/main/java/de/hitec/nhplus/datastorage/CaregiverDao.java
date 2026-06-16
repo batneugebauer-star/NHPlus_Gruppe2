@@ -17,6 +17,7 @@ public class CaregiverDao extends DaoImp<Caregiver> {
     @Override
     protected PreparedStatement getCreateStatement(Caregiver caregiver) {
         PreparedStatement statement = null;
+
         try {
             final String SQL =
                     "INSERT INTO caregiver " +
@@ -33,12 +34,14 @@ public class CaregiverDao extends DaoImp<Caregiver> {
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
+
         return statement;
     }
 
     @Override
     protected PreparedStatement getReadByIDStatement(long cid) {
         PreparedStatement statement = null;
+
         try {
             final String SQL =
                     "SELECT * FROM caregiver WHERE cid = ?";
@@ -49,6 +52,7 @@ public class CaregiverDao extends DaoImp<Caregiver> {
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
+
         return statement;
     }
 

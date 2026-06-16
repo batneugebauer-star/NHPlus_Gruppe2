@@ -171,7 +171,7 @@ public class LoginController {
                         user.getWrappedEncryptionKeyIv(),
                         user.getWrappedEncryptionKeyIterations(),
                         password
-                ); //Fehler bei mir aufgetretten versuch Ihn zu beheben
+                );
             } catch (DataEncryptionException e) {
                 // Falls unwrap fehlschlägt, erzwingen wir ein neues Wrapping mit dem aktuellen Passwort
                 System.out.println("Unwrap fehlgeschlagen für Benutzer: " + user.getUsername() + ". Generiere Schlüssel neu.");
@@ -199,7 +199,7 @@ public class LoginController {
                        password
                );
            } catch (DataEncryptionException e) {
-               // Verhindert den Absturz bei fehlerhaften Schlüsseln!
+               // Bei ungültigem Schlüssel wird ein neuer Schlüssel erzeugt
                System.out.println("WARNUNG: Schlüssel defekt. Generiere neu.");
            }
        }

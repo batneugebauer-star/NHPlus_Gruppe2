@@ -1,13 +1,8 @@
 package de.hitec.nhplus.utils;
 
-import de.hitec.nhplus.datastorage.ConnectionBuilder;
-import de.hitec.nhplus.datastorage.DaoFactory;
-import de.hitec.nhplus.datastorage.PatientDao;
-import de.hitec.nhplus.datastorage.TreatmentDao;
+import de.hitec.nhplus.datastorage.*;
 import de.hitec.nhplus.model.Patient;
 import de.hitec.nhplus.model.Treatment;
-import de.hitec.nhplus.datastorage.CaregiverDao;
-import de.hitec.nhplus.model.Caregiver;
 import de.hitec.nhplus.model.User;
 import de.hitec.nhplus.model.Role;
 import de.hitec.nhplus.datastorage.UserDao;
@@ -37,9 +32,8 @@ public class SetUpDB {
         SetUpDB.wipeDb(connection);
         SetUpDB.setUpTablePatient(connection);
         SetUpDB.setUpTableTreatment(connection);
-        SetUpDB.setUpTableEventLog(connection);
-        SetUpDB.setUpTableUser(connection);
         SetUpDB.setUpTableCaregiver(connection);
+        SetUpDB.setUpTableEventLog(connection);
         SetUpDB.setUpPatients();
         SetUpDB.setUpTreatments();
         SetUpDB.setUpUserTable();
@@ -53,7 +47,6 @@ public class SetUpDB {
             statement.execute("DROP TABLE IF EXISTS treatment");
             statement.execute("DROP TABLE IF EXISTS patient");
             statement.execute("DROP TABLE IF EXISTS eventlog");
-            statement.execute("DROP TABLE IF EXISTS user");
             statement.execute("DROP TABLE IF EXISTS caregiver");
         } catch (SQLException exception) {
             System.out.println(exception.getMessage());
@@ -127,7 +120,6 @@ public class SetUpDB {
         }
     }
 
-
     private static void setUpPatients() {
         try {
             PatientDao dao = DaoFactory.getDaoFactory().createPatientDao();
@@ -160,28 +152,15 @@ public class SetUpDB {
         }
     }
 
-    private static void setUpTableUser(Connection connection) {
-        final String SQL = "CREATE TABLE IF NOT EXISTS user (" +
-                "   uid INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "   username TEXT NOT NULL UNIQUE, " +
-                "   password_hash TEXT NOT NULL, " +
-                "   salt TEXT NOT NULL, " +
-                "   super_user INTEGER NOT NULL DEFAULT 0, " +
-                "   wrapped_encryption_key TEXT, " +
-                "   wrapped_encryption_key_salt TEXT, " +
-                "   wrapped_encryption_key_iv TEXT, " +
-                "   wrapped_encryption_key_iterations INTEGER" +
-                ");";
-        try (Statement statement = connection.createStatement()) {
-            statement.execute(SQL);
-        } catch (SQLException exception) {
-            System.out.println(exception.getMessage());
-        }
-    }
+    public static void setUpUserTable() {
+        UserDao userDao = DaoFactory.getDaoFactory().createUserDao();
+        userDao.createTableIfNotExists();
 
-    private static void setUpUsers() {
         try {
-            UserDao userDao = DaoFactory.getDaoFactory().createUserDao();
+            // nichts machen wenn schon User vorhanden sind
+            if (!userDao.readAll().isEmpty()) {
+                return;
+            }
             // Admin-User anlegen
             SecretKey encryptionKey = EncryptionUtil.getBootstrapKey();
             String adminSalt = PasswordUtil.generateSalt();
@@ -230,3 +209,4 @@ public class SetUpDB {
         SetUpDB.setUpDb();
     }
 }
+
