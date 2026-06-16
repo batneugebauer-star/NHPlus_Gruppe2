@@ -38,6 +38,11 @@ public class Main extends Application {
         showLoginWindow();
     }
 
+    /**
+     * Zeigt das Login-Fenster als erstes Fenster der Anwendung.
+     * Erst nach erfolgreichem Login wird das Hauptfenster geöffnet.
+     * Gehört zum Login-System aus Workstream C.
+     */
     public void showLoginWindow(){
         try {
             // login fenster laden

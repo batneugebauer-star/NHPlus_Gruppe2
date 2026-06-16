@@ -58,6 +58,11 @@ public class MainWindowController {
         }
     }
 
+    /**
+     * Wird aufgerufen wenn der Admin auf den Button "Passwort Reset" klickt.
+     * öffnet ein neues Fenster zum Zurücksetzen eines Benutzerpassworts.
+     * Gehört zum Login-System aus Workstream C.
+     */
     @FXML
     private void handleShowPasswordReset() {
         try {
@@ -76,6 +81,13 @@ public class MainWindowController {
 
     @FXML
     private Button buttonPasswordReset;
+
+    /**
+     * Wird beim Laden des Hauptfensters automatisch aufgerufen.
+     * Blendet den Passwort-Reset Button aus, wenn der eingeloggte
+     * Benutzer kein Admin ist. Prüft zuerst ob der Button im FXML-Layout
+     * überhaupt vorhanden ist, um eine NullPointerException zu vermeiden.
+     */
 
     @FXML
     private void initialize() {

@@ -27,8 +27,10 @@ import java.sql.SQLException;
 import javax.crypto.SecretKey;
 
 /**
- * Controller für das Login-Fenster.
- * Prüft Benutzername + Passwort und wechselt bei Erfolg zum Hauptfenster.
+ * Diese Klasse ist der Controller für das Login-Fenster.
+ * Sie prüft die Eingaben des Benutzers und vergleicht das Passwort
+ * mit dem gespeicherten Hash aus der Datenbank.
+ * Bei erfolgreichem Login wird zum Hauptfenster gewechselt.
  */
 public class LoginController {
 
@@ -38,11 +40,25 @@ public class LoginController {
 
     private Stage stage;
 
-    // Wird von Main.java aufgerufen damit wir die Scene wechseln können
+    /**
+     * Uebergibt die Stage an den Controller, damit er spaeter
+     * die Szene wechseln kann (vom Login-Fenster zum Hauptfenster).
+     *
+     * @param stage die Stage der Anwendung
+     */
     public void setStage(Stage stage) {
         this.stage = stage;
     }
-
+    /**
+     * Wird aufgerufen wenn der Benutzer auf den Login-Button klickt.
+     * Prueft ob die Felder leer sind, laedt den Benutzer aus der Datenbank
+     * und vergleicht das eingegebene Passwort mit dem gespeicherten Hash.
+     *
+     * Bei Erfolg wird zusaetzlich der Verschluesselungs-Schluessel des
+     * Benutzers geladen (resolveDataKey) und, falls der Benutzer kein
+     * Admin ist, ein Dialog zur Auswahl einer Arbeits-Rolle mit eigenem
+     * Rollen-Passwort angezeigt. Erst danach wird das Hauptfenster geoeffnet.
+     */
     @FXML
     private void handleLogin() {
         // Fehlermeldung zuerst ausblenden
@@ -79,7 +95,22 @@ public class LoginController {
                 passwordField.clear();
                 return;
             }
-
+/**
+ * Beschafft den Verschluesselungs-Schluessel fuer die Patientendaten
+ * des angemeldeten Benutzers. Falls der Benutzer bereits einen
+ * gewrappten Schluessel in der Datenbank hat, wird dieser mit dem
+ * eingegebenen Passwort entschluesselt (unwrap). Falls noch keiner
+ * existiert oder das Entschluesseln fehlschlaegt, wird ein neuer
+ * Schluessel erzeugt, mit dem Passwort gewrappt und in der Datenbank
+ * gespeichert.
+ *
+ * @param userDao das UserDao um den neuen Schluessel ggf. zu speichern
+ * @param user der angemeldete Benutzer
+ * @param password das eingegebene Klartext-Passwort, mit dem der
+ *                  Schluessel ent- bzw. verschluesselt wird
+ * @return der entschluesselte bzw. neu erzeugte Verschluesselungs-Schluessel
+ * @throws SQLException wenn ein Datenbankfehler beim Speichern auftritt
+ */
             SecretKey dataKey = resolveDataKey(userDao, user, password);
             // Wenn es KEIN globaler Admin ist, muss der Pfleger seine Rolle wählen
             if (!user.isSuperUser()) {
@@ -213,7 +244,13 @@ public class LoginController {
        userDao.updatePassword(user);
        return bootstrapKey;
    }
-
+    /**
+     * Prueft, ob der Benutzer bereits einen vollstaendigen gewrappten
+     * Verschluesselungs-Schluessel in der Datenbank gespeichert hat.
+     *
+     * @param user der zu pruefende Benutzer
+     * @return true wenn alle Felder fuer den gewrappten Schluessel vorhanden sind
+     */
     private boolean hasWrappedEncryptionKey(User user) {
         return user.getWrappedEncryptionKey() != null
                 && user.getWrappedEncryptionKeySalt() != null
@@ -221,12 +258,21 @@ public class LoginController {
                 && user.getWrappedEncryptionKeyIterations() > 0;
     }
 
+    /**
+     * Zeigt eine Fehlermeldung im Login-Fenster an.
+     *
+     * @param message der Text der Fehlermeldung
+     */
     private void showError(String message) {
         labelError.setText(message);
         labelError.setVisible(true);
     }
 
-    // Wechselt zum Hauptfenster auf derselben Stage
+    /**
+     * Wechselt vom Login-Fenster zum Hauptfenster auf derselben Stage.
+     * Wird nur nach erfolgreichem Login aufgerufen.
+     */
+
     private void showMainWindow() {
         try {
             FXMLLoader loader = new FXMLLoader(
@@ -247,7 +293,10 @@ public class LoginController {
         }
     }
 
-    // Wechselt zurück zum Login (wird beim Auto-Logout aufgerufen)
+    /**
+     * Wechselt zurück zum Login-Fenster.
+     * Wird aufgerufen wenn der automatische Logout nach 15 Minuten ausgelöst wird.
+     */
     private void showLoginWindow() {
         try {
             FXMLLoader loader = new FXMLLoader(

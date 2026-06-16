@@ -16,8 +16,16 @@ import javafx.stage.Stage;
 import java.sql.SQLException;
 import javax.crypto.SecretKey;
 
-// Controller für das Passwort-Reset-Fenster
-// NUR ADMINS dürfen Passwörter zurücksetzten!
+/**
+ * Controller für das Passwort-Reset-Fenster.
+ * Nur Benutzer mit Admin-Rechten (Super-User) dürfen Passwörter zurücksetzen.
+ *
+ * Setzt zusätzlich zu Passwort-Hash und Salt auch den gewrappten
+ * Verschlüsselungs-Schlüssel neu, damit dieser weiterhin mit dem
+ * (neuen) Passwort entschlüsselt werden kann. Dieser Teil gehört zu
+ * einer separaten Verschlüsselungs-Funktion, die nicht zum
+ * ursprünglichen Login-Workstream gehört.
+ */
 public class PasswordResetController {
 
     @FXML private TextField textFieldUsername;
@@ -25,6 +33,15 @@ public class PasswordResetController {
     @FXML private PasswordField passwordFieldConfirm;
     @FXML private Label labelResult;
 
+    /**
+     * Wird aufgerufen wenn auf den Button "Zurücksetzen" geklickt wird.
+     * Prueft ob der eingeloggte Benutzer Admin-Rechte hat, prüft die Eingaben,
+     * berechnet einen neuen Salt und Hash und speichert sie in der Datenbank.
+     *
+     * Wrappt zusätzlich den aktuellen Verschlüsselungs-Schlüssel der
+     * laufenden Session (aus SessionManager) mit dem neuen Passwort und
+     * speichert ihn beim Zielbenutzer.
+     */
     @FXML
     private void handleReset() {
         labelResult.setVisible(false);
@@ -90,12 +107,20 @@ public class PasswordResetController {
         }
     }
 
+    /**
+     * Schliest das Passwort-Reset-Fenster.
+     */
     @FXML
     private void handleClose() {
         Stage stage = (Stage) textFieldUsername.getScene().getWindow();
         stage.close();
     }
-
+    /**
+     * Zeigt eine Erfolgs- oder Fehlermeldung im Fenster an.
+     *
+     * @param message der anzuzeigende Text
+     * @param isError true wenn es eine Fehlermeldung ist (rot), false bei Erfolg (gruen)
+     */
     private void showMessage(String message, boolean isError) {
         labelResult.setText(message);
         labelResult.setStyle(isError ? "-fx-text-fill: #c0392b;" : "-fx-text-fill: #27ae60;");
