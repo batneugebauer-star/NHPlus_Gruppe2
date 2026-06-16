@@ -144,6 +144,14 @@ public class AllCaregiverController {
         doUpdate(event.getRowValue());
     }
 
+    @FXML
+    public void handleOnEditQualification(
+            TableColumn.CellEditEvent<Caregiver, String> event) {
+
+        event.getRowValue().setRole(event.getNewValue());
+        doUpdate(event.getRowValue());
+    }
+
     private void doUpdate(Caregiver caregiver) {
         try {
             dao.update(caregiver);
