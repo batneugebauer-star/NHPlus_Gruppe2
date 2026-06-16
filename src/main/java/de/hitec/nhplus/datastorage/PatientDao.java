@@ -178,10 +178,22 @@ public class PatientDao extends DaoImp<Patient> {
         return preparedStatement;
     }
 
+    /**
+     * Encrypts plaintext values before persisting sensitive patient data.
+     *
+     * @param plainText plaintext value
+     * @return encrypted value
+     */
     private String encrypt(String plainText) {
         return EncryptionUtil.encrypt(plainText);
     }
 
+    /**
+     * Decrypts persisted patient values after reading them from the database.
+     *
+     * @param encryptedText encrypted value
+     * @return decrypted plaintext value
+     */
     private String decrypt(String encryptedText) {
         return EncryptionUtil.decrypt(encryptedText);
     }

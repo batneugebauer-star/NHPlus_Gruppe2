@@ -60,18 +60,38 @@ public class Patient extends Person {
         this.assets = new SimpleStringProperty(assets);
     }
 
+    /**
+     * Returns the patient id.
+     *
+     * @return patient id
+     */
     public long getPid() {
         return pid.get();
     }
 
+    /**
+     * Returns the JavaFX property of the patient id.
+     *
+     * @return id property
+     */
     public SimpleLongProperty pidProperty() {
         return pid;
     }
 
+    /**
+     * Returns the date of birth as formatted string.
+     *
+     * @return date of birth
+     */
     public String getDateOfBirth() {
         return dateOfBirth.get();
     }
 
+    /**
+     * Returns the JavaFX property of the date of birth.
+     *
+     * @return date of birth property
+     */
     public SimpleStringProperty dateOfBirthProperty() {
         return dateOfBirth;
     }
@@ -85,39 +105,84 @@ public class Patient extends Person {
         this.dateOfBirth.set(dateOfBirth);
     }
 
+    /**
+     * Returns the care level.
+     *
+     * @return care level
+     */
     public String getCareLevel() {
         return careLevel.get();
     }
 
+    /**
+     * Returns the JavaFX property of the care level.
+     *
+     * @return care level property
+     */
     public SimpleStringProperty careLevelProperty() {
         return careLevel;
     }
 
+    /**
+     * Sets the care level.
+     *
+     * @param careLevel new care level
+     */
     public void setCareLevel(String careLevel) {
         this.careLevel.set(careLevel);
     }
 
+    /**
+     * Returns the room number.
+     *
+     * @return room number
+     */
     public String getRoomNumber() {
         return roomNumber.get();
     }
 
+    /**
+     * Returns the JavaFX property of the room number.
+     *
+     * @return room number property
+     */
     public SimpleStringProperty roomNumberProperty() {
         return roomNumber;
     }
 
 
+    /**
+     * Sets the room number.
+     *
+     * @param roomNumber new room number
+     */
     public void setRoomNumber(String roomNumber) {
         this.roomNumber.set(roomNumber);
     }
 
+    /**
+     * Returns the assets information.
+     *
+     * @return assets value
+     */
     public String getAssets() {
         return assets.get();
     }
 
+    /**
+     * Returns the JavaFX property of the assets information.
+     *
+     * @return assets property
+     */
     public SimpleStringProperty assetsProperty() {
         return assets;
     }
 
+    /**
+     * Sets the assets information.
+     *
+     * @param assets new assets value
+     */
     public void setAssets(String assets) {
         this.assets.set(assets);
     }
@@ -136,6 +201,12 @@ public class Patient extends Person {
         return true;
     }
 
+    /**
+     * Returns a human-readable string representation of this patient.
+     *
+     * @return patient details as text
+     */
+    @Override
     public String toString() {
         return "Patient" + "\nMNID: " + this.pid +
                 "\nFirstname: " + this.getFirstName() +
