@@ -1,14 +1,10 @@
 package de.hitec.nhplus.utils;
 
-import de.hitec.nhplus.datastorage.ConnectionBuilder;
-import de.hitec.nhplus.datastorage.DaoFactory;
-import de.hitec.nhplus.datastorage.PatientDao;
-import de.hitec.nhplus.datastorage.TreatmentDao;
+import de.hitec.nhplus.datastorage.*;
 import de.hitec.nhplus.model.Patient;
 import de.hitec.nhplus.model.Treatment;
-import de.hitec.nhplus.datastorage.CaregiverDao;
-import de.hitec.nhplus.model.Caregiver;
 import de.hitec.nhplus.model.User;
+import de.hitec.nhplus.model.Role;
 import de.hitec.nhplus.datastorage.UserDao;
 
 import java.sql.Connection;
@@ -36,11 +32,11 @@ public class SetUpDB {
         SetUpDB.wipeDb(connection);
         SetUpDB.setUpTablePatient(connection);
         SetUpDB.setUpTableTreatment(connection);
+        SetUpDB.setUpTableCaregiver(connection);
         SetUpDB.setUpTableEventLog(connection);
-        SetUpDB.setUpTableUser(connection);
         SetUpDB.setUpPatients();
         SetUpDB.setUpTreatments();
-        SetUpDB.setUpUsers();
+        SetUpDB.setUpUserTable();
     }
 
     /**
@@ -51,7 +47,7 @@ public class SetUpDB {
             statement.execute("DROP TABLE IF EXISTS treatment");
             statement.execute("DROP TABLE IF EXISTS patient");
             statement.execute("DROP TABLE IF EXISTS eventlog");
-            statement.execute("DROP TABLE IF EXISTS user");
+            statement.execute("DROP TABLE IF EXISTS caregiver");
         } catch (SQLException exception) {
             System.out.println(exception.getMessage());
         }
@@ -109,6 +105,20 @@ public class SetUpDB {
         }
     }
 
+    private static void setUpTableCaregiver(Connection connection) {
+        final String SQL = "CREATE TABLE IF NOT EXISTS caregiver (" +
+                "   cid INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "   firstname TEXT NOT NULL, " +
+                "   surname TEXT NOT NULL, " +
+                "   phonenumber TEXT NOT NULL, " +
+                "   role TEXT NOT NULL" +
+                ");";
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(SQL);
+        } catch (SQLException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
 
     private static void setUpPatients() {
         try {
@@ -142,34 +152,21 @@ public class SetUpDB {
         }
     }
 
-    private static void setUpTableUser(Connection connection) {
-        final String SQL = "CREATE TABLE IF NOT EXISTS user (" +
-                "   uid INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "   username TEXT NOT NULL UNIQUE, " +
-                "   password_hash TEXT NOT NULL, " +
-                "   salt TEXT NOT NULL, " +
-                "   super_user INTEGER NOT NULL DEFAULT 0, " +
-                "   wrapped_encryption_key TEXT, " +
-                "   wrapped_encryption_key_salt TEXT, " +
-                "   wrapped_encryption_key_iv TEXT, " +
-                "   wrapped_encryption_key_iterations INTEGER" +
-                ");";
-        try (Statement statement = connection.createStatement()) {
-            statement.execute(SQL);
-        } catch (SQLException exception) {
-            System.out.println(exception.getMessage());
-        }
-    }
+    public static void setUpUserTable() {
+        UserDao userDao = DaoFactory.getDaoFactory().createUserDao();
+        userDao.createTableIfNotExists();
 
-    private static void setUpUsers() {
         try {
-            UserDao userDao = DaoFactory.getDaoFactory().createUserDao();
+            // nichts machen wenn schon User vorhanden sind
+            if (!userDao.readAll().isEmpty()) {
+                return;
+            }
             // Admin-User anlegen
             SecretKey encryptionKey = EncryptionUtil.getBootstrapKey();
             String adminSalt = PasswordUtil.generateSalt();
             String adminHash = PasswordUtil.hash("admin123", adminSalt);
             KeyWrapUtil.WrappedKey adminWrappedKey = KeyWrapUtil.wrap(encryptionKey, "admin123");
-            userDao.create(new User(
+            User admin = new User(
                     "admin",
                     adminHash,
                     adminSalt,
@@ -178,12 +175,17 @@ public class SetUpDB {
                     adminWrappedKey.salt(),
                     adminWrappedKey.iv(),
                     adminWrappedKey.iterations()
-            ));
+            );
+
+            admin.setRole(Role.ADMIN);
+
+            userDao.create(admin);
+
             // normale Pflegekraft anlegen
             String pflegeSalt = PasswordUtil.generateSalt();
             String pflegeHash = PasswordUtil.hash("pflege1", pflegeSalt);
             KeyWrapUtil.WrappedKey pflegeWrappedKey = KeyWrapUtil.wrap(encryptionKey, "pflege1");
-            userDao.create(new User(
+            User pflege = new User(
                     "pflege",
                     pflegeHash,
                     pflegeSalt,
@@ -192,7 +194,11 @@ public class SetUpDB {
                     pflegeWrappedKey.salt(),
                     pflegeWrappedKey.iv(),
                     pflegeWrappedKey.iterations()
-            ));
+            );
+
+            pflege.setRole(Role.REGISTERED_NURSE);
+
+            userDao.create(pflege);
 
         } catch (SQLException e) {
             System.out.println("Fehler: " + e.getMessage());
@@ -203,3 +209,4 @@ public class SetUpDB {
         SetUpDB.setUpDb();
     }
 }
+

@@ -15,6 +15,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import de.hitec.nhplus.model.Patient;
 import de.hitec.nhplus.utils.DateConverter;
+import de.hitec.nhplus.utils.PermissionManager;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -84,42 +85,32 @@ public class AllPatientController {
     public void initialize() {
         this.readAllAndShowInTableView();
 
+        // Berechtigungsprüfung für Buttons und Tabellen-Editierbarkeit
+        de.hitec.nhplus.model.Role role = de.hitec.nhplus.utils.PermissionManager.getRole();
+        boolean hasAccess = (role == de.hitec.nhplus.model.Role.LEITER || role == de.hitec.nhplus.model.Role.ADMIN);
+        this.buttonAdd.setDisable(!hasAccess);
+        this.buttonDelete.setDisable(!hasAccess);
+        this.tableView.setEditable(hasAccess);
+
+        // Tabellenspalten initialisieren
         this.columnId.setCellValueFactory(new PropertyValueFactory<>("pid"));
+        this.setupEditableColumn(this.columnFirstName, "firstName");
+        this.setupEditableColumn(this.columnSurname, "surname");
+        this.setupEditableColumn(this.columnDateOfBirth, "dateOfBirth");
+        this.setupEditableColumn(this.columnCareLevel, "careLevel");
+        this.setupEditableColumn(this.columnRoomNumber, "roomNumber");
+        this.setupEditableColumn(this.columnAssets, "assets");
 
-        // CellValueFactory to show property values in TableView
-        this.columnFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-        // CellFactory to write property values from with in the TableView
-        this.columnFirstName.setCellFactory(TextFieldTableCell.forTableColumn());
-
-        this.columnSurname.setCellValueFactory(new PropertyValueFactory<>("surname"));
-        this.columnSurname.setCellFactory(TextFieldTableCell.forTableColumn());
-
-        this.columnDateOfBirth.setCellValueFactory(new PropertyValueFactory<>("dateOfBirth"));
-        this.columnDateOfBirth.setCellFactory(TextFieldTableCell.forTableColumn());
-
-        this.columnCareLevel.setCellValueFactory(new PropertyValueFactory<>("careLevel"));
-        this.columnCareLevel.setCellFactory(TextFieldTableCell.forTableColumn());
-
-        this.columnRoomNumber.setCellValueFactory(new PropertyValueFactory<>("roomNumber"));
-        this.columnRoomNumber.setCellFactory(TextFieldTableCell.forTableColumn());
-
-        this.columnAssets.setCellValueFactory(new PropertyValueFactory<>("assets"));
-        this.columnAssets.setCellFactory(TextFieldTableCell.forTableColumn());
-
-        //Anzeigen der Daten
         this.tableView.setItems(this.patients);
 
+        // Listener für Auswahl- und Eingabevalidierung
         this.buttonDelete.setDisable(true);
-        this.tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Patient>() {
-            @Override
-            public void changed(ObservableValue<? extends Patient> observableValue, Patient oldPatient, Patient newPatient) {;
-                AllPatientController.this.buttonDelete.setDisable(newPatient == null);
-            }
-        });
+        this.tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) ->
+                this.buttonDelete.setDisable(newSelection == null));
 
-        this.buttonAdd.setDisable(true);
-        ChangeListener<String> inputNewPatientListener = (observableValue, oldText, newText) ->
-                AllPatientController.this.buttonAdd.setDisable(!AllPatientController.this.areInputDataValid());
+        ChangeListener<String> inputNewPatientListener = (obs, oldText, newText) ->
+                this.buttonAdd.setDisable(!this.areInputDataValid());
+
         this.textFieldSurname.textProperty().addListener(inputNewPatientListener);
         this.textFieldFirstName.textProperty().addListener(inputNewPatientListener);
         this.textFieldDateOfBirth.textProperty().addListener(inputNewPatientListener);
@@ -127,6 +118,13 @@ public class AllPatientController {
         this.textFieldRoomNumber.textProperty().addListener(inputNewPatientListener);
         this.textFieldAssets.textProperty().addListener(inputNewPatientListener);
     }
+
+    // Initialisiert editierbare Tabellenspalten
+    private void setupEditableColumn(TableColumn<Patient, String> column, String property) {
+        column.setCellValueFactory(new PropertyValueFactory<>(property));
+        column.setCellFactory(TextFieldTableCell.forTableColumn());
+    }
+
 
     /**
      * When a cell of the column with first names was changed, this method will be called, to persist the change.
@@ -200,6 +198,11 @@ public class AllPatientController {
      * @param event Event including the changed object and the change.
      */
     private void doUpdate(TableColumn.CellEditEvent<Patient, String> event) {
+
+        if (!PermissionManager.canManagePatients()) {
+            return;
+        }
+
         try {
             this.dao.update(event.getRowValue());
         } catch (SQLException exception) {
@@ -228,7 +231,13 @@ public class AllPatientController {
      */
     @FXML
     public void handleDelete() {
+
+        if (!PermissionManager.canManagePatients()) {
+            return;
+        }
+
         Patient selectedItem = this.tableView.getSelectionModel().getSelectedItem();
+
         if (selectedItem != null) {
             try {
                 DaoFactory.getDaoFactory().createPatientDao().deleteById(selectedItem.getPid());
@@ -245,21 +254,46 @@ public class AllPatientController {
      * {@link PatientDao} to persist the data.
      */
     @FXML
-    public void handleAdd() {
-        String surname = this.textFieldSurname.getText();
-        String firstName = this.textFieldFirstName.getText();
-        String birthday = this.textFieldDateOfBirth.getText();
-        LocalDate date = DateConverter.convertStringToLocalDate(birthday);
-        String careLevel = this.textFieldCareLevel.getText();
-        String roomNumber = this.textFieldRoomNumber.getText();
-        String assets = this.textFieldAssets.getText();
-        try {
-            this.dao.create(new Patient(firstName, surname, date, careLevel, roomNumber, assets));
-        } catch (SQLException exception) {
-            exception.printStackTrace();
+    private void handleAdd() {
+        String surname = this.textFieldSurname.getText().trim();
+        String firstname = this.textFieldFirstName.getText().trim();
+        String birthday = this.textFieldDateOfBirth.getText().trim();
+        String careLevel = this.textFieldCareLevel.getText().trim();
+        String room = this.textFieldRoomNumber.getText().trim();
+        String assets = this.textFieldAssets.getText().trim();
+
+        if (firstname.isEmpty() || surname.isEmpty()) {
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.WARNING, "Bitte Vorname und Nachname ausfüllen!", javafx.scene.control.ButtonType.OK);
+            alert.showAndWait();
+            return;
         }
-        readAllAndShowInTableView();
-        clearTextfields();
+
+        try {
+            if (this.dao == null) {
+                this.dao = DaoFactory.getDaoFactory().createPatientDao();
+            }
+
+            LocalDate date = DateConverter.convertStringToLocalDate(birthday);
+            Patient patient = new Patient(firstname, surname, date, careLevel, room, assets);
+
+            this.dao.create(patient);
+
+            // Holt die Daten frisch aus der DB und aktualisiert die Tabelle
+            this.readAllAndShowInTableView();
+            this.tableView.refresh();
+
+            this.textFieldFirstName.clear();
+            this.textFieldSurname.clear();
+            this.textFieldDateOfBirth.clear();
+            this.textFieldCareLevel.clear();
+            this.textFieldRoomNumber.clear();
+            this.textFieldAssets.clear();
+
+        } catch (Exception e) {
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR, "Fehler beim Speichern: " + e.getMessage(), javafx.scene.control.ButtonType.OK);
+            alert.showAndWait();
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -275,6 +309,12 @@ public class AllPatientController {
     }
 
     private boolean areInputDataValid() {
+        if (!PermissionManager.canManagePatients()) {
+            return !this.textFieldFirstName.getText().isBlank() &&
+                    !this.textFieldSurname.getText().isBlank() &&
+                    !this.textFieldDateOfBirth.getText().isBlank();
+        }
+
         if (!this.textFieldDateOfBirth.getText().isBlank()) {
             try {
                 DateConverter.convertStringToLocalDate(this.textFieldDateOfBirth.getText());
@@ -283,8 +323,11 @@ public class AllPatientController {
             }
         }
 
-        return !this.textFieldFirstName.getText().isBlank() && !this.textFieldSurname.getText().isBlank() &&
-                !this.textFieldDateOfBirth.getText().isBlank() && !this.textFieldCareLevel.getText().isBlank() &&
-                !this.textFieldRoomNumber.getText().isBlank() && !this.textFieldAssets.getText().isBlank();
+        return !this.textFieldFirstName.getText().isBlank() &&
+                !this.textFieldSurname.getText().isBlank() &&
+                !this.textFieldDateOfBirth.getText().isBlank() &&
+                !this.textFieldCareLevel.getText().isBlank() &&
+                !this.textFieldRoomNumber.getText().isBlank() &&
+                !this.textFieldAssets.getText().isBlank();
     }
 }

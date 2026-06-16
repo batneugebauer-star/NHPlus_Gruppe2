@@ -16,6 +16,15 @@ import java.time.LocalDate;
 public class TreatmentController {
 
     @FXML
+    private TextArea txtDetailDocumentation;
+
+    @FXML
+    private TextArea txtDetailDiagnosis;
+
+    @FXML
+    private TextArea txtDetailTherapy;
+
+    @FXML
     private Label labelPatientName;
 
     @FXML
@@ -52,6 +61,45 @@ public class TreatmentController {
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
+        // Rollen-Sperre im Detail-Fenster
+        de.hitec.nhplus.model.Role currentRole = de.hitec.nhplus.utils.PermissionManager.getRole();
+
+        // Alle Detailfelder zunächst deaktivieren
+        if (txtDetailDocumentation != null) txtDetailDocumentation.setDisable(true);
+        if (txtDetailDiagnosis != null) txtDetailDiagnosis.setDisable(true);
+        if (txtDetailTherapy != null) txtDetailTherapy.setDisable(true);
+
+        // Rollenabhängige Freigabe der Bearbeitungsfelder
+        if (currentRole == de.hitec.nhplus.model.Role.ADMIN) {
+
+            if (txtDetailDocumentation != null)
+                txtDetailDocumentation.setDisable(false);
+
+            if (txtDetailDiagnosis != null)
+                txtDetailDiagnosis.setDisable(false);
+
+            if (txtDetailTherapy != null)
+                txtDetailTherapy.setDisable(false);
+
+        }
+        else if (currentRole == de.hitec.nhplus.model.Role.REGISTERED_NURSE) {
+
+            if (txtDetailDocumentation != null)
+                txtDetailDocumentation.setDisable(false);
+
+        }
+        else if (currentRole == de.hitec.nhplus.model.Role.DOCTOR) {
+
+            if (txtDetailDiagnosis != null)
+                txtDetailDiagnosis.setDisable(false);
+
+        }
+        else if (currentRole == de.hitec.nhplus.model.Role.THERAPIST) {
+
+            if (txtDetailTherapy != null)
+                txtDetailTherapy.setDisable(false);
+
+        }
     }
 
     private void showData(){
@@ -62,16 +110,68 @@ public class TreatmentController {
         this.textFieldBegin.setText(this.treatment.getBegin());
         this.textFieldEnd.setText(this.treatment.getEnd());
         this.textFieldDescription.setText(this.treatment.getDescription());
-        this.textAreaRemarks.setText(this.treatment.getRemarks());
+
+        if (this.txtDetailDocumentation != null) this.txtDetailDocumentation.clear();
+        if (this.txtDetailDiagnosis != null) this.txtDetailDiagnosis.clear();
+        if (this.txtDetailTherapy != null) this.txtDetailTherapy.clear();
+
+        String gesamtText = this.treatment.getRemarks() != null ? this.treatment.getRemarks() : "";
+
+        if (gesamtText.contains("Diagnose:") || gesamtText.contains("Therapie:") || gesamtText.contains("Pflege:")) {
+            String[] parts = gesamtText.split(" \\| ");
+            for (String part : parts) {
+                if (part.startsWith("Pflege:") && this.txtDetailDocumentation != null) {
+                    this.txtDetailDocumentation.setText(part.replace("Pflege: ", ""));
+                } else if (part.startsWith("Diagnose:") && this.txtDetailDiagnosis != null) {
+                    this.txtDetailDiagnosis.setText(part.replace("Diagnose: ", ""));
+                } else if (part.startsWith("Therapie:") && this.txtDetailTherapy != null) {
+                    this.txtDetailTherapy.setText(part.replace("Therapie: ", ""));
+                }
+            }
+        } else {
+            if (this.txtDetailDocumentation != null) {
+                this.txtDetailDocumentation.setText(gesamtText);
+            }
+        }
     }
 
     @FXML
-    public void handleChange(){
+    public void handleChange() {
+
         this.treatment.setDate(this.datePicker.getValue().toString());
         this.treatment.setBegin(textFieldBegin.getText());
         this.treatment.setEnd(textFieldEnd.getText());
         this.treatment.setDescription(textFieldDescription.getText());
-        this.treatment.setRemarks(textAreaRemarks.getText());
+
+        String remarks = "";
+
+        if (txtDetailDocumentation != null &&
+                !txtDetailDocumentation.getText().isBlank()) {
+
+            remarks += "Pflege: "
+                    + txtDetailDocumentation.getText();
+        }
+
+        if (txtDetailDiagnosis != null &&
+                !txtDetailDiagnosis.getText().isBlank()) {
+
+            if (!remarks.isEmpty()) remarks += " | ";
+
+            remarks += "Diagnose: "
+                    + txtDetailDiagnosis.getText();
+        }
+
+        if (txtDetailTherapy != null &&
+                !txtDetailTherapy.getText().isBlank()) {
+
+            if (!remarks.isEmpty()) remarks += " | ";
+
+            remarks += "Therapie: "
+                    + txtDetailTherapy.getText();
+        }
+
+        this.treatment.setRemarks(remarks);
+
         doUpdate();
         controller.readAllAndShowInTableView();
         stage.close();
